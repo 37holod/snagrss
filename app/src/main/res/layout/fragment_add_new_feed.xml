@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/primary_light">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="@dimen/fragment_padding"
+        android:orientation="vertical">
+
+        <ProgressBar
+            android:id="@+id/fragment_add_new_feed_url_pb"
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <EditText
+                android:id="@+id/fragment_add_new_feed_url_et"
+                style="@style/CustomEditText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/url"
+                android:text="http://kotaku.com/vip.xml"/>
+        </android.support.design.widget.TextInputLayout>
+
+        <Button
+            android:id="@+id/fragment_add_new_feed_bt"
+            style="@style/CustomButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/add"/>
+    </LinearLayout>
+
+</RelativeLayout>

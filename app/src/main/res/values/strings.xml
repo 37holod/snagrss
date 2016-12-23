@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">Snagrss</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="title">Title</string>
+    <string name="url">Url</string>
+    <string name="add">Add</string>
+    <string name="plus">+</string>
+    <string name="minus">-</string>
+    <string name="add_rss_feed">Add RSS feed</string>
+    <string name="error">Error</string>
+    <string name="close">Close</string>
+    <string name="warning">Warning</string>
+    <string name="ok">Ok</string>
+    <string name="cancel">Cancel</string>
+    <string name="really_remove_feed">Really remove feed?</string>
+    <string name="read_more"><![CDATA[<font color=#536dfe><u>Read more..</u></font>]]></string>
+    <string name="by_newest">By newest</string>
+    <string name="by_oldest">By oldest</string>
+    <string name="connecting">Connecting</string>
+    <string name="please_wait">Please, wait</string>
+</resources>
