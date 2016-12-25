@@ -72,7 +72,7 @@ public class AddNewFeedFragment extends ContentFragments {
                                 for (Object listener
                                         : getListenerByClass(FeedCountListener.class)) {
                                     ((FeedCountListener) listener).addNewFeed
-                                            (channelList.get(0).getUrl());
+                                            (channelList.get(0));
                                 }
                                 for (Object listener
                                         : getListenerByClass(FragmentManagerI.class)) {

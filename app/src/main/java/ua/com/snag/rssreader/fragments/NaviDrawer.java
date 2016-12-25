@@ -93,12 +93,12 @@ public class NaviDrawer extends BaseFragment implements FeedCountListener {
     }
 
     @Override
-    public void addNewFeed(String url) {
+    public void addNewFeed(Channel channel) {
         refreshData();
     }
 
     @Override
-    public void removeFeed(String url) {
+    public void removeFeed(Channel channel) {
         refreshData();
     }
 
@@ -173,7 +173,7 @@ public class NaviDrawer extends BaseFragment implements FeedCountListener {
                         public void removingSuccess() {
                             for (Object listener
                                     : getListenerByClass(FeedCountListener.class)) {
-                                ((FeedCountListener) listener).removeFeed(channel.getUrl());
+                                ((FeedCountListener) listener).removeFeed(channel);
                             }
                         }
 

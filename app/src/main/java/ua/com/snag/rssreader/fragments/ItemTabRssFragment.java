@@ -30,7 +30,7 @@ import ua.com.snag.rssreader.model.RssItem;
  * Created by holod on 22.12.16.
  */
 
-public class ItemTabRssFragment extends BaseFragment implements ChangeSettingsListener {
+public class ItemTabRssFragment extends BaseFragment {
     private static final String TAG = ItemTabRssFragment.class.getSimpleName();
     public static final String CHANNEL_URL_KEY = "CHANNEL_URL_KEY";
     private ArrayList<RssItem> rssItemList;
@@ -141,8 +141,8 @@ public class ItemTabRssFragment extends BaseFragment implements ChangeSettingsLi
 
     }
 
-    @Override
     public void settingsChanged(ChangedSettings changedSettings) {
+
         if (changedSettings.isFeedDescChanged()) {
             settingsManager.isFeedOrderDesc(new FetchBooleanValue() {
                 @Override

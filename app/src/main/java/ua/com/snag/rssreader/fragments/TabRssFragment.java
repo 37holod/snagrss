@@ -81,13 +81,7 @@ public class TabRssFragment extends ContentFragments implements FeedCountListene
             public void success(List<Channel> channelList) {
                 final ArrayList<TabItem> tempItemsList = new ArrayList<TabItem>();
                 for (Channel channel : channelList) {
-                    TabItem tabItem = new TabItem();
-                    tabItem.setChannel(channel);
-                    ItemTabRssFragment itemTabRssFragment = new ItemTabRssFragment();
-                    Bundle bundle = new Bundle();
-                    bundle.putString(ItemTabRssFragment.CHANNEL_URL_KEY, channel.getUrl());
-                    itemTabRssFragment.setArguments(bundle);
-                    tabItem.setItemTabRssFragment(itemTabRssFragment);
+                    TabItem tabItem = createTabItem(channel);
                     tempItemsList.add(tabItem);
                 }
                 handler.post(new Runnable() {
@@ -116,13 +110,32 @@ public class TabRssFragment extends ContentFragments implements FeedCountListene
         });
     }
 
-    @Override
-    public void addNewFeed(String url) {
-        refreshAdapter();
+    private TabItem createTabItem(Channel channel) {
+        TabItem tabItem = new TabItem();
+        tabItem.setChannel(channel);
+        ItemTabRssFragment itemTabRssFragment = new ItemTabRssFragment();
+        Bundle bundle = new Bundle();
+        bundle.putString(ItemTabRssFragment.CHANNEL_URL_KEY, channel.getUrl());
+        itemTabRssFragment.setArguments(bundle);
+        tabItem.setItemTabRssFragment(itemTabRssFragment);
+        return tabItem;
     }
 
     @Override
-    public void removeFeed(String url) {
+    public void addNewFeed(final Channel channel) {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                TabItem tabItem = createTabItem(channel);
+                itemsList.add(tabItem);
+                customFragmentPagerAdapter.notifyDataSetChanged();
+                fragment_tab_rss_vp.setCurrentItem(itemsList.indexOf(tabItem));
+            }
+        });
+    }
+
+    @Override
+    public void removeFeed(final Channel channel) {
         for (Object listener
                 : getListenerByClass(FragmentManagerI.class)) {
             ((FragmentManagerI) listener).addToContentFragment(new TabRssFragment(), false);
@@ -160,7 +173,7 @@ public class TabRssFragment extends ContentFragments implements FeedCountListene
     @Override
     public void settingsChanged(ChangedSettings changedSettings) {
         for (TabItem tabItem : itemsList) {
-            ((ChangeSettingsListener) tabItem.getItemTabRssFragment()).settingsChanged
+            tabItem.getItemTabRssFragment().settingsChanged
                     (changedSettings);
         }
     }
