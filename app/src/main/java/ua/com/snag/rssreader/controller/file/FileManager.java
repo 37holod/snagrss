@@ -1,4 +1,4 @@
-package ua.com.snag.rssreader.controller;
+package ua.com.snag.rssreader.controller.file;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -10,6 +10,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.concurrent.ThreadPoolExecutor;
+
+import ua.com.snag.rssreader.controller.LoadImageListener;
+import ua.com.snag.rssreader.controller.RssItemListReceiver;
 
 /**
  * Created by holod on 21.12.16.
@@ -18,15 +22,17 @@ import java.io.IOException;
 public class FileManager implements FileManagerI {
 
     private Context context;
+    private ThreadPoolExecutor executor;
 
-    public FileManager(Context context) {
+    public FileManager(Context context, ThreadPoolExecutor executor) {
         this.context = context;
+        this.executor = executor;
     }
 
     @Override
     public void saveImage(final String path, final Bitmap bitmap, final SaveImageListener
             saveImageListener) {
-        new Thread(new Runnable() {
+        executor.execute(new Runnable() {
             @Override
             public void run() {
                 synchronized (FileManager.this) {
@@ -52,7 +58,7 @@ public class FileManager implements FileManagerI {
                     }
                 }
             }
-        }).start();
+        });
 
     }
 
@@ -64,7 +70,7 @@ public class FileManager implements FileManagerI {
 
     @Override
     public void loadImage(final String path, final LoadImageListener loadImageListener) {
-        new Thread(new Runnable() {
+        executor.execute(new Runnable() {
             @Override
             public void run() {
                 synchronized (FileManager.this) {
@@ -85,6 +91,6 @@ public class FileManager implements FileManagerI {
                     }
                 }
             }
-        }).start();
+        });
     }
 }

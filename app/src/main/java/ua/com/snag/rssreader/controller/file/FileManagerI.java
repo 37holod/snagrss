@@ -1,6 +1,8 @@
-package ua.com.snag.rssreader.controller;
+package ua.com.snag.rssreader.controller.file;
 
 import android.graphics.Bitmap;
+
+import ua.com.snag.rssreader.controller.ManagerI;
 
 /**
  * Created by holod on 21.12.16.
@@ -8,9 +10,6 @@ import android.graphics.Bitmap;
 
 public interface FileManagerI extends ManagerI {
 
-    interface SaveImageListener extends ManagerI.ManagerOperation {
-        void saveSuccess(String filePath);
-    }
 
     void saveImage(String path, Bitmap bitmap, SaveImageListener saveImageListener);
 

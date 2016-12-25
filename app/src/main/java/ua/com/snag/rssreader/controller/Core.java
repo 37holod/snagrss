@@ -7,9 +7,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import ua.com.snag.rssreader.activities.BaseActivity;
+import ua.com.snag.rssreader.controller.database.DbManager;
+import ua.com.snag.rssreader.controller.file.FileManager;
+import ua.com.snag.rssreader.controller.network.NetworkManager;
+import ua.com.snag.rssreader.controller.settings.SettingsManager;
 import ua.com.snag.rssreader.fragments.BaseFragment;
+import ua.com.snag.rssreader.test.IdlingResourceImpl;
 
 /**
  * Created by holod on 20.12.16.
@@ -22,20 +30,33 @@ public class Core extends Application {
     private BaseActivity currentActivity;
     private DataProvider dataProvider;
     private SettingsManager settingsManager;
+    private ThreadPoolExecutor executor;
+    private IdlingResourceImpl idlingResource;
 
     @Override
     public void onCreate() {
         baseActivityHashMap = new HashMap<>();
         baseFragmentHashMap = new HashMap<>();
-        dataProvider = new DataProvider(getApplicationContext());
-        settingsManager = new SettingsManager(getApplicationContext());
+        int numderOfCores = Runtime.getRuntime().availableProcessors();
+
+        executor = new ThreadPoolExecutor(
+                numderOfCores * 4,
+                numderOfCores * 4,
+                60L,
+                TimeUnit.SECONDS,
+                new LinkedBlockingQueue<Runnable>());
+        settingsManager = new SettingsManager(getApplicationContext(), executor);
+        dataProvider = new DataProvider();
         dataProvider.setSettingsManager(settingsManager);
+        dataProvider.setDbManager(new DbManager(getApplicationContext(), executor));
+        dataProvider.setFileManager(new FileManager(getApplicationContext(), executor));
+        dataProvider.setNetworkManager(new NetworkManager(executor));
+        idlingResource = new IdlingResourceImpl();
         super.onCreate();
     }
 
     public static void writeLog(String tag, String text) {
-        Log.d(tag, text + " <" + Thread.currentThread().getName() +
-                ">");
+        Log.d(tag, text);
     }
 
     public static void writeLogError(String tag, Exception e) {
@@ -51,17 +72,17 @@ public class Core extends Application {
     }
 
     public void addToBaseActivityMap(BaseActivity baseActivity) {
-        writeLog(TAG, "addToBaseActivityMap " + baseActivity.getClass().getSimpleName());
         currentActivity = baseActivity;
         baseActivityHashMap.put(baseActivity.getClass().toString(), baseActivity);
         baseActivity.setSettingsManager(settingsManager);
+        baseActivity.setIdlingResource(idlingResource);
     }
 
     public void addToBaseFragmentsMap(BaseFragment baseFragment) {
-        writeLog(TAG, "addToBaseActivityMap " + baseFragment.getClass().getSimpleName());
         baseFragmentHashMap.put(baseFragment.getClass().toString(), baseFragment);
         baseFragment.setDataProvider(dataProvider);
         baseFragment.setSettingsManager(settingsManager);
+        baseFragment.setIdlingResource(idlingResource);
     }
 
 

@@ -1,30 +1,26 @@
 package ua.com.snag.rssreader.activities;
 
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.PersistableBundle;
-import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
-import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import ua.com.snag.rssreader.R;
 import ua.com.snag.rssreader.controller.Core;
-import ua.com.snag.rssreader.controller.DataProvider;
-import ua.com.snag.rssreader.controller.SettingsManager;
-import ua.com.snag.rssreader.controller.SettingsManagerI;
+import ua.com.snag.rssreader.controller.settings.SettingsManager;
+import ua.com.snag.rssreader.controller.settings.SettingsManagerI;
 import ua.com.snag.rssreader.model.Orientation;
+import ua.com.snag.rssreader.test.IdlingResourceImpl;
 
 /**
  * Created by holod on 20.12.16.
@@ -38,6 +34,11 @@ public abstract class BaseActivity extends AppCompatActivity {
     private boolean alive;
     private FragmentManager fragmentManager;
     protected SettingsManagerI settingsManager;
+    protected IdlingResourceImpl idlingResource;
+
+    public void setIdlingResource(IdlingResourceImpl idlingResource) {
+        this.idlingResource = idlingResource;
+    }
 
     public void setSettingsManager(SettingsManager settingsManager) {
         this.settingsManager = settingsManager;
@@ -67,6 +68,10 @@ public abstract class BaseActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
+    public Orientation getOrientation() {
+        return orientation;
+    }
+
     private void setOrientation() {
         DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
         float dpWidth = displayMetrics.widthPixels / displayMetrics.density;
@@ -78,35 +83,33 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
     }
 
-    protected void fragmentsReplacer(final int id, final Fragment fragment) {
+
+    protected void fragmentAdd(final int id, final Fragment fragment, final boolean
+            addToBackStack) {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                android.support.v4.app.FragmentTransaction fragmentTransaction = fragmentManager
-                        .beginTransaction();
-                fragmentTransaction.replace(id, fragment);
-                fragmentTransaction.commitAllowingStateLoss();
-                fragmentManager.popBackStack();
+                try {
+                    FragmentTransaction fragmentTransaction = fragmentManager
+                            .beginTransaction();
+                    String tag = fragment.getClass().getSimpleName();
+                    Fragment existingFragment = fragmentManager.findFragmentByTag(tag);
+                    if (existingFragment != null) {
+                        fragmentTransaction.remove(existingFragment);
+                        fragmentManager.popBackStack();
+                    }
+                    if (addToBackStack) {
+                        fragmentTransaction.add(id, fragment, tag);
+                        fragmentTransaction.addToBackStack(tag);
+                    } else {
+                        fragmentTransaction.replace(id, fragment, tag);
+                    }
+                    fragmentTransaction.commitAllowingStateLoss();
+                } catch (Exception e) {
+                    Core.writeLogError(TAG, e);
+                }
             }
         });
-    }
-
-    protected void fragmentAdd(final int id, final Fragment fragment) {
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                FragmentTransaction fragmentTransaction = fragmentManager
-                        .beginTransaction();
-                fragmentTransaction.add(id, fragment);
-                fragmentTransaction.addToBackStack(fragment.getClass().getSimpleName());
-                fragmentTransaction.commitAllowingStateLoss();
-            }
-        });
-    }
-
-    protected int fragmentsRemoveFromTop(final int id) {
-        fragmentRemove(fragmentFinder(id));
-        return fragmentManager.getBackStackEntryCount();
     }
 
 
@@ -114,20 +117,21 @@ public abstract class BaseActivity extends AppCompatActivity {
         handler.post(new Runnable() {
             @Override
             public void run() {
-                FragmentTransaction fragmentTransaction = fragmentManager
-                        .beginTransaction();
-                fragmentTransaction.remove(fragment);
-                fragmentTransaction.commitAllowingStateLoss();
-                fragmentManager.popBackStack();
+                try {
+                    FragmentTransaction fragmentTransaction = fragmentManager
+                            .beginTransaction();
+                    fragmentTransaction.remove(fragment);
+                    fragmentTransaction.commitAllowingStateLoss();
+                    fragmentManager.popBackStack();
+                } catch (Exception e) {
+                    Core.writeLogError(TAG, e);
+                }
             }
         });
     }
 
-    protected Fragment fragmentFinder(final int id) {
-        return fragmentManager.findFragmentById(id);
-    }
 
-    protected ArrayList<?> getListenerByClass(Class listener) {
+    protected List<?> getListenerByClass(Class listener) {
         return core.getListenerByClass(listener);
     }
 

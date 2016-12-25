@@ -7,9 +7,7 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
-import android.text.Spannable;
 import android.text.Spanned;
-import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,8 +19,10 @@ import java.util.List;
 
 import ua.com.snag.rssreader.R;
 import ua.com.snag.rssreader.controller.Core;
-import ua.com.snag.rssreader.controller.ManagerI;
-import ua.com.snag.rssreader.controller.SettingsManagerI;
+import ua.com.snag.rssreader.controller.LoadImageListener;
+import ua.com.snag.rssreader.controller.RssItemListReceiver;
+import ua.com.snag.rssreader.controller.settings.FetchBooleanValue;
+import ua.com.snag.rssreader.controller.settings.SettingsManagerI;
 import ua.com.snag.rssreader.model.ChangedSettings;
 import ua.com.snag.rssreader.model.RssItem;
 
@@ -67,7 +67,7 @@ public class ItemTabRssFragment extends BaseFragment implements ChangeSettingsLi
         swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id
                 .fragment_item_tab_rss_srl);
         initActions();
-        settingsManager.isFeedOrderDesc(new SettingsManagerI.FetchBooleanValue() {
+        settingsManager.isFeedOrderDesc(new FetchBooleanValue() {
             @Override
             public void success(boolean value) {
                 orderDesc = value;
@@ -87,7 +87,7 @@ public class ItemTabRssFragment extends BaseFragment implements ChangeSettingsLi
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                dataProvider.refreshRssItemList(channelUrl, new ManagerI.RssItemListReceiver() {
+                dataProvider.refreshRssItemList(channelUrl, new RssItemListReceiver() {
                     @Override
                     public void success(List<RssItem> rssItemList) {
                         notifyAdapter(rssItemList);
@@ -96,6 +96,7 @@ public class ItemTabRssFragment extends BaseFragment implements ChangeSettingsLi
 
                     @Override
                     public void error(Exception e) {
+                        Core.writeLogError(TAG, e);
                         showError(e.getMessage());
                         setSwipeRefreshing(false);
                     }
@@ -125,7 +126,7 @@ public class ItemTabRssFragment extends BaseFragment implements ChangeSettingsLi
     }
 
     private void refreshData() {
-        dataProvider.fetchRssItemList(channelUrl, new ManagerI.RssItemListReceiver() {
+        dataProvider.fetchRssItemList(channelUrl, new RssItemListReceiver() {
             @Override
             public void success(final List<RssItem> tempRssItemList) {
                 notifyAdapter(tempRssItemList);
@@ -134,6 +135,7 @@ public class ItemTabRssFragment extends BaseFragment implements ChangeSettingsLi
             @Override
             public void error(Exception e) {
                 showError(e.getMessage());
+                Core.writeLogError(TAG, e);
             }
         }, orderDesc);
 
@@ -142,7 +144,7 @@ public class ItemTabRssFragment extends BaseFragment implements ChangeSettingsLi
     @Override
     public void settingsChanged(ChangedSettings changedSettings) {
         if (changedSettings.isFeedDescChanged()) {
-            settingsManager.isFeedOrderDesc(new SettingsManagerI.FetchBooleanValue() {
+            settingsManager.isFeedOrderDesc(new FetchBooleanValue() {
                 @Override
                 public void success(boolean value) {
                     orderDesc = value;
@@ -209,14 +211,14 @@ public class ItemTabRssFragment extends BaseFragment implements ChangeSettingsLi
                         Bundle bundle = new Bundle();
                         bundle.putString(WebViewFragment.RSS_ITEM_URL_KEY, rssItem.getLink());
                         webViewFragment.setArguments(bundle);
-                        ((FragmentManagerI) listener).addToContentFragment(webViewFragment);
+                        ((FragmentManagerI) listener).addToContentFragment(webViewFragment, true);
                     }
                 }
             });
 
             if (rssItem.getImageUrl() != null) {
                 iv.setImageBitmap(null);
-                dataProvider.loadImage(rssItem.getImageUrl(), new ManagerI.LoadImageListener() {
+                dataProvider.loadImage(rssItem.getImageUrl(), new LoadImageListener() {
                     @Override
                     public void loadSuccess(final Bitmap bitmap) {
                         handler.post(new Runnable() {

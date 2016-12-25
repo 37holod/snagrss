@@ -1,4 +1,7 @@
-package ua.com.snag.rssreader.controller;
+package ua.com.snag.rssreader.controller.network;
+
+import ua.com.snag.rssreader.controller.ChannelListReceiver;
+import ua.com.snag.rssreader.controller.ManagerI;
 
 /**
  * Created by holod on 21.12.16.

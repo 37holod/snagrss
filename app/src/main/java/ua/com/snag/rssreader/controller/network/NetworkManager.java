@@ -1,4 +1,4 @@
-package ua.com.snag.rssreader.controller;
+package ua.com.snag.rssreader.controller.network;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -14,12 +14,17 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import ua.com.snag.rssreader.controller.ChannelListReceiver;
+import ua.com.snag.rssreader.controller.Core;
+import ua.com.snag.rssreader.controller.LoadImageListener;
+import ua.com.snag.rssreader.controller.RssItemListReceiver;
 import ua.com.snag.rssreader.model.Channel;
 import ua.com.snag.rssreader.model.RssItem;
 import ua.com.snag.rssreader.utils.RssConst;
@@ -37,12 +42,17 @@ public class NetworkManager implements NetworkManagerI {
     private static final String TAG_DESRIPTION = "description";
     private static final String TAG_ITEM = "item";
     private static final String TAG_PUB_DATE = "pubDate";
+    private ThreadPoolExecutor executor;
+
+    public NetworkManager(ThreadPoolExecutor executor) {
+        this.executor = executor;
+    }
 
 
     @Override
     public void fetchRssItemList(final String channelUrl, final RssItemListReceiver
             rssItemListReceiver, boolean orderDesc) {
-        new Thread(new Runnable() {
+        executor.execute(new Runnable() {
             @Override
             public void run() {
                 InputStream is = null;
@@ -52,7 +62,6 @@ public class NetworkManager implements NetworkManagerI {
                     NodeList nodeList = doc.getElementsByTagName(TAG_CHANNEL);
                     Element e = (Element) nodeList.item(0);
                     NodeList items = e.getElementsByTagName(TAG_ITEM);
-
                     for (int i = 0; i < items.getLength(); i++) {
                         Node node = items.item(i);
                         if (node.getNodeType() == Node.ELEMENT_NODE) {
@@ -71,7 +80,7 @@ public class NetworkManager implements NetworkManagerI {
                             rssItem.setPubDate(pubDate);
                             String description = getValue(e1, TAG_DESRIPTION);
                             rssItem.setShortDescription(createShortMessageBody(description));
-                            rssItem.setImageUrl(fetchPicture(description));
+                            rssItem.setImageUrl(fetchPicture(node.getTextContent()));
                             rssItemList.add(rssItem);
                         }
                     }
@@ -81,7 +90,7 @@ public class NetworkManager implements NetworkManagerI {
                     rssItemListReceiver.error(e);
                 }
             }
-        }).start();
+        });
 
     }
 
@@ -102,7 +111,7 @@ public class NetworkManager implements NetworkManagerI {
     }
 
     private InputStream createConnection(String channelUrl) throws Exception {
-        Core.writeLog(TAG, "channelUrl " + channelUrl);
+
         URL url = new URL(channelUrl);
         HttpURLConnection connection = (HttpURLConnection) url
                 .openConnection();
@@ -111,14 +120,14 @@ public class NetworkManager implements NetworkManagerI {
         connection.setRequestMethod("GET");
         connection.setDoInput(true);
         connection.connect();
-        int response = connection.getResponseCode();
+//        int response = connection.getResponseCode();
         return connection.getInputStream();
     }
 
     @Override
     public void fetchChannel(final String channelUrl, final ChannelListReceiver
             channelListFetching) {
-        new Thread(new Runnable() {
+        executor.execute(new Runnable() {
             @Override
             public void run() {
                 ArrayList<Channel> channelList = new ArrayList<Channel>();
@@ -128,7 +137,6 @@ public class NetworkManager implements NetworkManagerI {
                     Element e = (Element) nodeList.item(0);
                     Channel channel = new Channel();
                     channel.setLink(getValue(e, TAG_LINK));
-                    Core.writeLog(TAG, "fetch channel.getLink() " + channel.getLink());
                     channel.setTitle(getValue(e, TAG_TITLE));
                     channel.setUrl(channelUrl);
                     channel.setChannelDescription(getValue(e, TAG_DESRIPTION));
@@ -138,13 +146,13 @@ public class NetworkManager implements NetworkManagerI {
                     channelListFetching.error(e);
                 }
             }
-        }).start();
+        });
     }
 
 
     @Override
     public void loadImage(final String path, final LoadImageListener loadImageListener) {
-        new Thread(new Runnable() {
+        executor.execute(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -157,7 +165,7 @@ public class NetworkManager implements NetworkManagerI {
                     loadImageListener.error(e);
                 }
             }
-        }).start();
+        });
     }
 
 

@@ -12,8 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ua.com.snag.rssreader.R;
+import ua.com.snag.rssreader.controller.ChannelListReceiver;
 import ua.com.snag.rssreader.controller.Core;
-import ua.com.snag.rssreader.controller.ManagerI;
 import ua.com.snag.rssreader.model.ChangedSettings;
 import ua.com.snag.rssreader.model.Channel;
 
@@ -24,13 +24,17 @@ import ua.com.snag.rssreader.model.Channel;
 public class TabRssFragment extends ContentFragments implements FeedCountListener,
         ChangeSettingsListener {
     private static final String TAG = TabRssFragment.class.getSimpleName();
+    private static final String SAVE_PAGE_NUMBER = "SAVE_PAGE_NUMBER";
     private ArrayList<TabItem> itemsList;
     private ViewPager fragment_tab_rss_vp;
     private CustomFragmentPagerAdapter customFragmentPagerAdapter;
+    private int currentPage;
+    private Bundle savedInstanceState;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        this.savedInstanceState = savedInstanceState;
         View view = inflater.inflate(R.layout.fragment_tab_rss,
                 null, false);
         initFields(view);
@@ -38,15 +42,41 @@ public class TabRssFragment extends ContentFragments implements FeedCountListene
     }
 
     private void initFields(View view) {
+        currentPage = -1;
         itemsList = new ArrayList<>();
         fragment_tab_rss_vp = (ViewPager) view.findViewById(R.id.fragment_tab_rss_vp);
         customFragmentPagerAdapter = new CustomFragmentPagerAdapter(getChildFragmentManager());
         fragment_tab_rss_vp.setAdapter(customFragmentPagerAdapter);
+        fragment_tab_rss_vp.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+
+            @Override
+            public void onPageSelected(int position) {
+                currentPage = position;
+            }
+
+            @Override
+            public void onPageScrolled(int position, float positionOffset,
+                                       int positionOffsetPixels) {
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+            }
+        });
+
         refreshAdapter();
+
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putInt(SAVE_PAGE_NUMBER, currentPage);
+    }
+
+
     private void refreshAdapter() {
-        dataProvider.fetchChannelList(new ManagerI.ChannelListReceiver() {
+        dataProvider.fetchChannelList(new ChannelListReceiver() {
             @Override
             public void success(List<Channel> channelList) {
                 final ArrayList<TabItem> tempItemsList = new ArrayList<TabItem>();
@@ -66,6 +96,15 @@ public class TabRssFragment extends ContentFragments implements FeedCountListene
                         itemsList.clear();
                         itemsList.addAll(tempItemsList);
                         customFragmentPagerAdapter.notifyDataSetChanged();
+                        if (savedInstanceState != null) {
+                            currentPage = savedInstanceState.getInt(SAVE_PAGE_NUMBER);
+                            try {
+                                fragment_tab_rss_vp.setCurrentItem(currentPage, false);
+                            } catch (Exception e) {
+                                Core.writeLogError(TAG, e);
+                            }
+                        }
+
                     }
                 });
             }
@@ -84,7 +123,10 @@ public class TabRssFragment extends ContentFragments implements FeedCountListene
 
     @Override
     public void removeFeed(String url) {
-        refreshAdapter();
+        for (Object listener
+                : getListenerByClass(FragmentManagerI.class)) {
+            ((FragmentManagerI) listener).addToContentFragment(new TabRssFragment(), false);
+        }
     }
 
     @Override

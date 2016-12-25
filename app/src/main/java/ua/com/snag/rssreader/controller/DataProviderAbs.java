@@ -4,6 +4,12 @@ import android.graphics.Bitmap;
 
 import java.util.List;
 
+import ua.com.snag.rssreader.controller.database.DbManagerI;
+import ua.com.snag.rssreader.controller.database.ManagerInsertListener;
+import ua.com.snag.rssreader.controller.database.ManagerRemoveListener;
+import ua.com.snag.rssreader.controller.file.FileManagerI;
+import ua.com.snag.rssreader.controller.file.SaveImageListener;
+import ua.com.snag.rssreader.controller.network.NetworkManagerI;
 import ua.com.snag.rssreader.model.Channel;
 import ua.com.snag.rssreader.model.RssItem;
 

@@ -1,11 +1,17 @@
 package ua.com.snag.rssreader.controller;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 
 import java.io.FileNotFoundException;
 import java.util.List;
 
+import ua.com.snag.rssreader.controller.database.DbManagerI;
+import ua.com.snag.rssreader.controller.database.ManagerInsertListener;
+import ua.com.snag.rssreader.controller.database.ManagerRemoveListener;
+import ua.com.snag.rssreader.controller.file.FileManagerI;
+import ua.com.snag.rssreader.controller.file.SaveImageListener;
+import ua.com.snag.rssreader.controller.network.NetworkManagerI;
+import ua.com.snag.rssreader.controller.settings.SettingsManagerI;
 import ua.com.snag.rssreader.model.Channel;
 import ua.com.snag.rssreader.model.RssItem;
 
@@ -20,15 +26,23 @@ public class DataProvider extends DataProviderAbs {
     private NetworkManagerI networkManager;
     private SettingsManagerI settingsManager;
 
-    public void setSettingsManager(SettingsManager settingsManager) {
+
+    public void setSettingsManager(SettingsManagerI settingsManager) {
         this.settingsManager = settingsManager;
     }
 
-    public DataProvider(Context context) {
-        dbManager = new DbManager(context);
-        fileManager = new FileManager(context);
-        networkManager = new NetworkManager();
+    public void setDbManager(DbManagerI dbManager) {
+        this.dbManager = dbManager;
     }
+
+    public void setFileManager(FileManagerI fileManager) {
+        this.fileManager = fileManager;
+    }
+
+    public void setNetworkManager(NetworkManagerI networkManager) {
+        this.networkManager = networkManager;
+    }
+
 
     @Override
     public void fetchChannelList(ChannelListReceiver channelListFetching) {
@@ -81,21 +95,21 @@ public class DataProvider extends DataProviderAbs {
 
                             @Override
                             public void error(Exception e) {
-                                Core.writeLogError(TAG, e);
+                                rssItemListReceiver.error(e);
                             }
                         }, orderDesc);
                     }
 
                     @Override
                     public void error(Exception e) {
-                        Core.writeLogError(TAG, e);
+                        rssItemListReceiver.error(e);
                     }
                 });
             }
 
             @Override
             public void error(Exception e) {
-                Core.writeLogError(TAG, e);
+                rssItemListReceiver.error(e);
             }
         }, orderDesc);
     }

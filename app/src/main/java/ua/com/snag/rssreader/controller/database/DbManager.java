@@ -1,4 +1,4 @@
-package ua.com.snag.rssreader.controller;
+package ua.com.snag.rssreader.controller.database;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -8,7 +8,12 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadPoolExecutor;
 
+import ua.com.snag.rssreader.controller.ChannelListReceiver;
+import ua.com.snag.rssreader.controller.Core;
+import ua.com.snag.rssreader.controller.LoadImageListener;
+import ua.com.snag.rssreader.controller.RssItemListReceiver;
 import ua.com.snag.rssreader.model.Channel;
 import ua.com.snag.rssreader.model.RssItem;
 
@@ -22,9 +27,11 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
     public static final String TEXT_TYPE = "text";
     private static final String TAG = DbManager.class.getSimpleName();
     public static int DB_VERSION = 1;
+    private ThreadPoolExecutor executor;
 
-    public DbManager(Context context) {
+    public DbManager(Context context, ThreadPoolExecutor executor) {
         super(context, DB_NAME, null, DB_VERSION);
+        this.executor = executor;
     }
 
 
@@ -72,7 +79,7 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
 
     @Override
     public void fetchChannelList(final ChannelListReceiver channelListFetching) {
-        new Thread(new Runnable() {
+        executor.execute(new Runnable() {
             @Override
             public void run() {
                 synchronized (DbManager.this) {
@@ -94,7 +101,7 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
                     }
                 }
             }
-        }).start();
+        });
     }
 
     private ArrayList<Channel> fillChannelList(Cursor cursor)
@@ -124,7 +131,7 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
     @Override
     public void fetchRssItemList(final String channelUrl, final RssItemListReceiver
             rssItemListReceiver, final boolean orderDesc) {
-        new Thread(new Runnable() {
+        executor.execute(new Runnable() {
             @Override
             public void run() {
                 synchronized (DbManager.this) {
@@ -150,7 +157,7 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
                     }
                 }
             }
-        }).start();
+        });
     }
 
     @Override
@@ -189,7 +196,7 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
     @Override
     public void insertChannelList(final List<Channel> channelList, final ManagerInsertListener
             dbInsertListener) {
-        new Thread(new Runnable() {
+        executor.execute(new Runnable() {
             @Override
             public void run() {
                 synchronized (DbManager.this) {
@@ -208,7 +215,7 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
                     }
                 }
             }
-        }).start();
+        });
     }
 
     private void insertingChannelList(List<Channel> channelList, int
@@ -227,7 +234,7 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
     @Override
     public void insertRssItemList(final List<RssItem> rssItemList, final ManagerInsertListener
             dbInsertListener) {
-        new Thread(new Runnable() {
+        executor.execute(new Runnable() {
             @Override
             public void run() {
                 synchronized (DbManager.this) {
@@ -246,7 +253,7 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
                     }
                 }
             }
-        }).start();
+        });
     }
 
     private void insertingRssItemList(List<RssItem> rssItemList, int
@@ -268,7 +275,7 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
 
     public void removeChannel(final String channelUrl, final ManagerRemoveListener
             managerRemoveListener) {
-        new Thread(new Runnable() {
+        executor.execute(new Runnable() {
             @Override
             public void run() {
                 synchronized (DbManager.this) {
@@ -287,7 +294,7 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
                     }
                 }
             }
-        }).start();
+        });
 
     }
 

@@ -5,10 +5,8 @@ package ua.com.snag.rssreader.fragments;
  */
 
 public interface FragmentManagerI {
-    void replaceContentFragment(final BaseFragment baseFragment);
+    void addToContentFragment(BaseFragment baseFragment, boolean addToBackStack);
 
-    void addToContentFragment(final BaseFragment baseFragment);
-
-    void removeFragment(final BaseFragment baseFragment);
+    void removeFragment(BaseFragment baseFragment);
 
 }

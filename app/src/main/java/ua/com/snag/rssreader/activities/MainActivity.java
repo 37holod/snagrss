@@ -1,27 +1,26 @@
 package ua.com.snag.rssreader.activities;
 
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.annotation.NonNull;
+import android.support.annotation.VisibleForTesting;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 
 import ua.com.snag.rssreader.R;
+import ua.com.snag.rssreader.controller.AsyncExecutionListener;
 import ua.com.snag.rssreader.controller.Core;
-import ua.com.snag.rssreader.controller.ManagerI;
 import ua.com.snag.rssreader.fragments.BaseFragment;
 import ua.com.snag.rssreader.fragments.ChangeSettingsListener;
-import ua.com.snag.rssreader.fragments.FeedCountListener;
-import ua.com.snag.rssreader.fragments.NaviDrawer;
 import ua.com.snag.rssreader.fragments.FragmentManagerI;
+import ua.com.snag.rssreader.fragments.NaviDrawer;
 import ua.com.snag.rssreader.fragments.NaviDrawerListener;
 import ua.com.snag.rssreader.fragments.TabRssFragment;
 import ua.com.snag.rssreader.model.ChangedSettings;
+import ua.com.snag.rssreader.test.IdlingResourceImpl;
 
 public class MainActivity extends BaseActivity implements FragmentManagerI, NaviDrawerListener {
     private static final String TAG = MainActivity.class.getSimpleName();
@@ -34,14 +33,6 @@ public class MainActivity extends BaseActivity implements FragmentManagerI, Navi
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
         drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -52,10 +43,11 @@ public class MainActivity extends BaseActivity implements FragmentManagerI, Navi
         initActions(savedInstanceState);
     }
 
+
     private void initActions(Bundle savedInstanceState) {
         if (savedInstanceState == null) {
-            fragmentsReplacer(R.id.activity_main_navi_view_fl, new NaviDrawer());
-            replaceContentFragment(new TabRssFragment());
+            fragmentAdd(R.id.activity_main_navi_view_fl, new NaviDrawer(), false);
+            fragmentAdd(R.id.content_main_fl, new TabRssFragment(), false);
         }
     }
 
@@ -65,10 +57,7 @@ public class MainActivity extends BaseActivity implements FragmentManagerI, Navi
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
-            if (fragmentsRemoveFromTop(R.id
-                    .content_main_fl) < 2) {
-                super.onBackPressed();
-            }
+            super.onBackPressed();
         }
     }
 
@@ -99,18 +88,10 @@ public class MainActivity extends BaseActivity implements FragmentManagerI, Navi
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void replaceContentFragment(final BaseFragment baseFragment) {
-
-        fragmentsReplacer(R.id.content_main_fl, baseFragment);
-        closeDrawer();
-
-    }
 
     @Override
-    public void addToContentFragment(final BaseFragment baseFragment) {
-
-        fragmentAdd(R.id.content_main_fl, baseFragment);
+    public void addToContentFragment(final BaseFragment baseFragment, boolean addToBackStack) {
+        fragmentAdd(R.id.content_main_fl, baseFragment, addToBackStack);
         closeDrawer();
 
     }
@@ -122,13 +103,19 @@ public class MainActivity extends BaseActivity implements FragmentManagerI, Navi
 
     @Override
     public void closeDrawer() {
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        }
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (drawer.isDrawerOpen(GravityCompat.START)) {
+                    drawer.closeDrawer(GravityCompat.START);
+                }
+            }
+        });
+
     }
 
     public void setDesc(boolean desc) {
-        settingsManager.setFeedOrderDesc(new ManagerI.InsertListener() {
+        settingsManager.setFeedOrderDesc(new AsyncExecutionListener() {
             @Override
             public void success() {
                 ChangedSettings changedSettings = new ChangedSettings();
@@ -141,8 +128,15 @@ public class MainActivity extends BaseActivity implements FragmentManagerI, Navi
 
             @Override
             public void error(Exception e) {
+                Core.writeLogError(TAG, e);
                 showError(e.getMessage());
             }
         }, desc);
+    }
+
+    @VisibleForTesting
+    @NonNull
+    public IdlingResourceImpl getIdlingResource() {
+        return idlingResource;
     }
 }

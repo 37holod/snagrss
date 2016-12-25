@@ -1,18 +1,21 @@
 package ua.com.snag.rssreader.fragments;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import ua.com.snag.rssreader.activities.BaseActivity;
 import ua.com.snag.rssreader.controller.Core;
 import ua.com.snag.rssreader.controller.DataProvider;
-import ua.com.snag.rssreader.controller.SettingsManager;
-import ua.com.snag.rssreader.controller.SettingsManagerI;
-import ua.com.snag.rssreader.model.Orientation;
+import ua.com.snag.rssreader.controller.settings.SettingsManager;
+import ua.com.snag.rssreader.controller.settings.SettingsManagerI;
+import ua.com.snag.rssreader.test.IdlingResourceImpl;
 
 /**
  * Created by holod on 20.12.16.
@@ -25,6 +28,12 @@ public abstract class BaseFragment extends Fragment {
     protected Handler handler;
     protected DataProvider dataProvider;
     protected SettingsManagerI settingsManager;
+    protected IdlingResourceImpl idlingResource;
+
+    public void setIdlingResource(IdlingResourceImpl idlingResource) {
+        this.idlingResource = idlingResource;
+    }
+
 
     public void setSettingsManager(SettingsManager settingsManager) {
         this.settingsManager = settingsManager;
@@ -43,6 +52,7 @@ public abstract class BaseFragment extends Fragment {
         super.onCreate(savedInstanceState);
     }
 
+
     @Override
     public void onDestroy() {
         alive = false;
@@ -50,7 +60,7 @@ public abstract class BaseFragment extends Fragment {
 
     }
 
-    protected ArrayList<?> getListenerByClass(Class listener) {
+    protected List<?> getListenerByClass(Class listener) {
         return core.getListenerByClass(listener);
     }
 
@@ -72,6 +82,21 @@ public abstract class BaseFragment extends Fragment {
 
     public void showError(final String text) {
         ((BaseActivity) getActivity()).showError(text);
+    }
+
+
+    public void hideKeyboard() {
+        try {
+            InputMethodManager inputManager = (InputMethodManager) getActivity()
+                    .getSystemService(Context.INPUT_METHOD_SERVICE);
+            View v = getActivity().getCurrentFocus();
+            if (v == null) {
+                return;
+            }
+            inputManager.hideSoftInputFromWindow(v.getWindowToken(), 0);
+        } catch (Exception e) {
+            Core.writeLogError(TAG, e);
+        }
     }
 
 }

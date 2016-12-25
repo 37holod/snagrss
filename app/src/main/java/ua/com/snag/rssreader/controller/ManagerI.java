@@ -12,28 +12,10 @@ import ua.com.snag.rssreader.model.RssItem;
  */
 
 public interface ManagerI {
-    interface ManagerOperation {
-        void error(Exception e);
-    }
 
-    interface InsertListener extends ManagerI.ManagerOperation {
-        void success();
-    }
-
-    interface ChannelListReceiver extends ManagerOperation {
-        void success(List<Channel> channelList);
-    }
-
-    interface RssItemListReceiver extends ManagerOperation {
-        void success(List<RssItem> rssItemList);
-    }
 
     void fetchRssItemList(String channelUrl, RssItemListReceiver rssItemListReceiver, boolean
             orderDesc);
-
-    interface LoadImageListener extends ManagerI.ManagerOperation {
-        void loadSuccess(Bitmap bitmap);
-    }
 
     void loadImage(String path, LoadImageListener loadImageListener);
 }

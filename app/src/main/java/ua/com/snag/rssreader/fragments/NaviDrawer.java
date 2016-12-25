@@ -14,9 +14,10 @@ import java.util.List;
 
 import ua.com.snag.rssreader.R;
 import ua.com.snag.rssreader.activities.BaseActivity;
+import ua.com.snag.rssreader.controller.ChannelListReceiver;
 import ua.com.snag.rssreader.controller.Core;
-import ua.com.snag.rssreader.controller.DbManagerI;
-import ua.com.snag.rssreader.controller.ManagerI;
+import ua.com.snag.rssreader.controller.database.DbManagerI;
+import ua.com.snag.rssreader.controller.database.ManagerRemoveListener;
 import ua.com.snag.rssreader.model.Channel;
 
 /**
@@ -49,16 +50,16 @@ public class NaviDrawer extends BaseFragment implements FeedCountListener {
     }
 
     private void refreshData() {
-        dataProvider.fetchChannelList(new ManagerI.ChannelListReceiver() {
+        dataProvider.fetchChannelList(new ChannelListReceiver() {
             @Override
             public void success(List<Channel> channelList) {
                 refreshListView(channelList);
                 if (channelList.isEmpty()) {
-                    Core.writeLog(TAG, "channelList.isEmpty");
+
                     for (Object listener
                             : getListenerByClass(FragmentManagerI.class)) {
                         ((FragmentManagerI) listener).addToContentFragment
-                                (new AddNewFeedFragment());
+                                (new AddNewFeedFragment(), true);
                     }
                 }
             }
@@ -167,8 +168,7 @@ public class NaviDrawer extends BaseFragment implements FeedCountListener {
 
                 @Override
                 public void okPressed() {
-                    dataProvider.removeChannel(channel.getUrl(), new DbManagerI
-                            .ManagerRemoveListener() {
+                    dataProvider.removeChannel(channel.getUrl(), new ManagerRemoveListener() {
                         @Override
                         public void removingSuccess() {
                             for (Object listener
@@ -180,6 +180,7 @@ public class NaviDrawer extends BaseFragment implements FeedCountListener {
                         @Override
                         public void error(Exception e) {
                             showError(e.getMessage());
+                            Core.writeLogError(TAG, e);
                         }
                     });
 
@@ -201,7 +202,7 @@ public class NaviDrawer extends BaseFragment implements FeedCountListener {
             for (Object listener
                     : getListenerByClass(FragmentManagerI.class)) {
                 ((FragmentManagerI) listener).addToContentFragment(new
-                        AddNewFeedFragment());
+                        AddNewFeedFragment(), true);
             }
         }
 

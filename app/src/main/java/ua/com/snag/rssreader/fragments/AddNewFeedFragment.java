@@ -9,11 +9,10 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import ua.com.snag.rssreader.R;
+import ua.com.snag.rssreader.controller.ChannelListReceiver;
 import ua.com.snag.rssreader.controller.Core;
-import ua.com.snag.rssreader.controller.ManagerI;
 import ua.com.snag.rssreader.model.Channel;
 
 /**
@@ -25,6 +24,7 @@ public class AddNewFeedFragment extends ContentFragments {
     private EditText fragment_add_new_feed_url_et;
     private Button fragment_add_new_feed_bt;
     private ProgressBar progressBar;
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -56,13 +56,15 @@ public class AddNewFeedFragment extends ContentFragments {
         fragment_add_new_feed_bt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                hideKeyboard();
                 setPb(View.VISIBLE);
+                idlingResource.setIdleState(false);
                 dataProvider.fetchChannel(fragment_add_new_feed_url_et.getText().toString(), new
-                        ManagerI.ChannelListReceiver() {
+                        ChannelListReceiver() {
                             @Override
                             public void success(List<Channel> channelList) {
                                 setPb(View.INVISIBLE);
+                                idlingResource.setIdleState(true);
                                 if (channelList.isEmpty()) {
                                     error(new Exception("empty list"));
                                     return;
@@ -81,12 +83,16 @@ public class AddNewFeedFragment extends ContentFragments {
 
                             @Override
                             public void error(Exception e) {
+                                idlingResource.setIdleState(true);
                                 setPb(View.INVISIBLE);
                                 showError(e.getMessage());
+                                Core.writeLogError(TAG, e);
                             }
                         });
 
             }
         });
     }
+
+
 }

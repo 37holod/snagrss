@@ -1,7 +1,9 @@
-package ua.com.snag.rssreader.controller;
+package ua.com.snag.rssreader.controller.database;
 
 import java.util.List;
 
+import ua.com.snag.rssreader.controller.ChannelListReceiver;
+import ua.com.snag.rssreader.controller.ManagerI;
 import ua.com.snag.rssreader.model.Channel;
 import ua.com.snag.rssreader.model.RssItem;
 
@@ -12,9 +14,6 @@ import ua.com.snag.rssreader.model.RssItem;
 
 public interface DbManagerI extends ManagerI {
 
-    interface ManagerInsertListener extends ManagerOperation {
-        void insertingSuccess();
-    }
 
     void fetchChannelList(ChannelListReceiver channelListFetching);
 
@@ -25,9 +24,6 @@ public interface DbManagerI extends ManagerI {
     void insertRssItemList(List<RssItem> channelList, ManagerInsertListener
             dbInsertListener);
 
-    interface ManagerRemoveListener extends ManagerOperation {
-        void removingSuccess();
-    }
 
     void removeChannel(String channelUrl, ManagerRemoveListener managerRemoveListener);
 
