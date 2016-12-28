@@ -14,8 +14,11 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import ua.com.snag.rssreader.R;
 import ua.com.snag.rssreader.controller.Core;
@@ -25,6 +28,7 @@ import ua.com.snag.rssreader.controller.settings.FetchBooleanValue;
 import ua.com.snag.rssreader.controller.settings.SettingsManagerI;
 import ua.com.snag.rssreader.model.ChangedSettings;
 import ua.com.snag.rssreader.model.RssItem;
+import ua.com.snag.rssreader.utils.RssConst;
 
 /**
  * Created by holod on 22.12.16.
@@ -165,14 +169,16 @@ public class ItemTabRssFragment extends PagerPage {
 
     public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.CustomViewHolder> {
         Spanned readMore;
+        SimpleDateFormat simpleDateFormat;
 
         RecyclerAdapter() {
             readMore = Html.fromHtml(getResources().getString(R.string.read_more));
+            simpleDateFormat = new SimpleDateFormat("MMM dd, HH:mm", Locale.getDefault());
         }
 
         class CustomViewHolder extends RecyclerView.ViewHolder {
             TextView tab_rss_recycler_item_title_tv, tab_rss_recycler_item_descr_tv,
-                    tab_rss_recycler_item_more_tv;
+                    tab_rss_recycler_item_more_tv, tab_rss_recycler_item_descr_date;
             ImageView tab_rss_recycler_item_title_iv;
 
             CustomViewHolder(View view) {
@@ -183,8 +189,11 @@ public class ItemTabRssFragment extends PagerPage {
                         .tab_rss_recycler_item_descr_tv);
                 tab_rss_recycler_item_more_tv = (TextView) view.findViewById(R.id
                         .tab_rss_recycler_item_more_tv);
+                tab_rss_recycler_item_descr_date = (TextView) view.findViewById(R.id
+                        .tab_rss_recycler_item_descr_date);
                 tab_rss_recycler_item_title_iv = (ImageView) view.findViewById(R.id
                         .tab_rss_recycler_item_title_iv);
+
             }
         }
 
@@ -205,7 +214,7 @@ public class ItemTabRssFragment extends PagerPage {
 
             final ImageView iv = holder.tab_rss_recycler_item_title_iv;
             holder.tab_rss_recycler_item_more_tv.setText(readMore);
-            holder.tab_rss_recycler_item_more_tv.setOnClickListener(new View.OnClickListener() {
+            View.OnClickListener onClickListener = new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     for (Object listener
@@ -217,7 +226,17 @@ public class ItemTabRssFragment extends PagerPage {
                         ((FragmentManagerI) listener).addToContentFragment(webViewFragment, true);
                     }
                 }
-            });
+            };
+            holder.tab_rss_recycler_item_more_tv.setOnClickListener(onClickListener);
+            iv.setOnClickListener(onClickListener);
+            try {
+                holder.tab_rss_recycler_item_descr_date.setText(simpleDateFormat.format(new
+                        Date(Long.parseLong(rssItem.getPubDate()))));
+            } catch (IllegalArgumentException e) {
+                holder.tab_rss_recycler_item_descr_date.setText(rssItem.getPubDate());
+                Core.writeLogError(TAG, e);
+            }
+
 
             if (rssItem.getImageUrl() != null) {
                 iv.setImageBitmap(null);

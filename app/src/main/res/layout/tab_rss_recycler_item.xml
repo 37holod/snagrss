@@ -43,6 +43,14 @@
                 android:text="TextView"/>
 
             <TextView
+                android:id="@+id/tab_rss_recycler_item_descr_date"
+                style="@style/CustomTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/fragment_padding"
+                android:text="TextView"/>
+
+            <TextView
                 android:id="@+id/tab_rss_recycler_item_more_tv"
                 style="@style/CustomTextView"
                 android:layout_width="match_parent"

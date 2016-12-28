@@ -143,6 +143,10 @@ public class NetworkManager implements NetworkManagerI {
         connection.setRequestMethod("GET");
         connection.setDoInput(true);
         connection.connect();
+        int responce = connection.getResponseCode();
+        if (responce != HttpURLConnection.HTTP_OK) {
+            throw new Exception("connection responce " + responce);
+        }
         return connection;
     }
 
@@ -196,14 +200,15 @@ public class NetworkManager implements NetworkManagerI {
                     while (o.outWidth / scale / 2 >= maxWidth) {
                         scale *= 2;
                     }
+                    closeConnections(inputStream, httpURLConnection);
                     o = new BitmapFactory.Options();
                     o.inSampleSize = scale;
-                    closeConnections(inputStream, httpURLConnection);
                     httpURLConnection = createConnection(path);
                     inputStream = httpURLConnection.getInputStream();
                     BufferedInputStream bufferedInputStream = new BufferedInputStream
                             (inputStream);
                     Bitmap bitmap = BitmapFactory.decodeStream(bufferedInputStream, null, o);
+
                     loadImageListener.loadSuccess(bitmap);
                 } catch (Exception e) {
                     loadImageListener.error(e);
