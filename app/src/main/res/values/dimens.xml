@@ -8,4 +8,5 @@
     <dimen name="click_items_hight">60dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="fragment_padding">10dp</dimen>
+    <dimen name="recycle_item_image_size">80dp</dimen>
 </resources>

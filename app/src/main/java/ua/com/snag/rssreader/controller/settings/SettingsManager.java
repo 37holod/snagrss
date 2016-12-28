@@ -33,17 +33,13 @@ public class SettingsManager implements SettingsManagerI {
             @Override
             public void run() {
                 synchronized (SettingsManager.this) {
-                    new Handler(context.getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                boolean value = sPref.getBoolean(ORDER_DESC, false);
-                                fetchBooleanValue.success(value);
-                            } catch (Exception e) {
-                                fetchBooleanValue.error(e);
-                            }
-                        }
-                    });
+
+                    try {
+                        boolean value = sPref.getBoolean(ORDER_DESC, false);
+                        fetchBooleanValue.success(value);
+                    } catch (Exception e) {
+                        fetchBooleanValue.error(e);
+                    }
 
                 }
             }
@@ -57,20 +53,16 @@ public class SettingsManager implements SettingsManagerI {
             @Override
             public void run() {
                 synchronized (SettingsManager.this) {
-                    new Handler(context.getMainLooper()).post(new Runnable() {
-                        @Override
-                        public void run() {
-                            SharedPreferences.Editor ed = null;
-                            try {
-                                ed = sPref.edit();
-                                ed.putBoolean(ORDER_DESC, value);
-                                ed.apply();
-                                asyncExecutionListener.success();
-                            } catch (Exception e) {
-                                asyncExecutionListener.error(e);
-                            }
-                        }
-                    });
+                    SharedPreferences.Editor ed = null;
+                    try {
+                        ed = sPref.edit();
+                        ed.putBoolean(ORDER_DESC, value);
+                        ed.apply();
+                        asyncExecutionListener.success();
+                    } catch (Exception e) {
+                        asyncExecutionListener.error(e);
+                    }
+
 
                 }
             }

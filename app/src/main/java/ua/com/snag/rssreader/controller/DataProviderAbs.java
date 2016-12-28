@@ -43,7 +43,7 @@ public abstract class DataProviderAbs implements DbManagerI, FileManagerI,
 
 
     @Override
-    public void loadImage(String path, LoadImageListener loadImageListener) {
+    public void loadImage(String path, LoadImageListener loadImageListener, int maxWidth) {
 
     }
 

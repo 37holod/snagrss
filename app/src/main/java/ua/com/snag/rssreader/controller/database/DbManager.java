@@ -161,7 +161,7 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
     }
 
     @Override
-    public void loadImage(String path, LoadImageListener loadImageListener) {
+    public void loadImage(String path, LoadImageListener loadImageListener, int maxWidth) {
 
     }
 

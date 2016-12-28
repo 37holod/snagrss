@@ -10,6 +10,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -55,10 +56,13 @@ public class NetworkManager implements NetworkManagerI {
         executor.execute(new Runnable() {
             @Override
             public void run() {
-                InputStream is = null;
                 ArrayList<RssItem> rssItemList = new ArrayList<RssItem>();
+                HttpURLConnection httpURLConnection = null;
+                InputStream inputStream = null;
                 try {
-                    Document doc = createDocument(channelUrl);
+                    httpURLConnection = createConnection(channelUrl);
+                    inputStream = httpURLConnection.getInputStream();
+                    Document doc = createDocument(inputStream);
                     NodeList nodeList = doc.getElementsByTagName(TAG_CHANNEL);
                     Element e = (Element) nodeList.item(0);
                     NodeList items = e.getElementsByTagName(TAG_ITEM);
@@ -88,10 +92,29 @@ public class NetworkManager implements NetworkManagerI {
 
                 } catch (Exception e) {
                     rssItemListReceiver.error(e);
+                } finally {
+                    closeConnections(inputStream, httpURLConnection);
                 }
             }
         });
 
+    }
+
+    private void closeConnections(InputStream inputStream, HttpURLConnection httpURLConnection) {
+        if (inputStream != null) {
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                Core.writeLogError(TAG, e);
+            }
+        }
+        if (httpURLConnection != null) {
+            try {
+                httpURLConnection.disconnect();
+            } catch (Exception e) {
+                Core.writeLogError(TAG, e);
+            }
+        }
     }
 
 
@@ -104,13 +127,13 @@ public class NetworkManager implements NetworkManagerI {
         return null;
     }
 
-    private Document createDocument(String channelUrl) throws Exception {
+    private Document createDocument(InputStream inputStream) throws Exception {
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-        return dBuilder.parse(createConnection(channelUrl));
+        return dBuilder.parse(inputStream);
     }
 
-    private InputStream createConnection(String channelUrl) throws Exception {
+    private HttpURLConnection createConnection(String channelUrl) throws Exception {
 
         URL url = new URL(channelUrl);
         HttpURLConnection connection = (HttpURLConnection) url
@@ -120,8 +143,7 @@ public class NetworkManager implements NetworkManagerI {
         connection.setRequestMethod("GET");
         connection.setDoInput(true);
         connection.connect();
-//        int response = connection.getResponseCode();
-        return connection.getInputStream();
+        return connection;
     }
 
     @Override
@@ -131,8 +153,12 @@ public class NetworkManager implements NetworkManagerI {
             @Override
             public void run() {
                 ArrayList<Channel> channelList = new ArrayList<Channel>();
+                HttpURLConnection httpURLConnection = null;
+                InputStream inputStream = null;
                 try {
-                    Document doc = createDocument(channelUrl);
+                    httpURLConnection = createConnection(channelUrl);
+                    inputStream = httpURLConnection.getInputStream();
+                    Document doc = createDocument(inputStream);
                     NodeList nodeList = doc.getElementsByTagName(TAG_CHANNEL);
                     Element e = (Element) nodeList.item(0);
                     Channel channel = new Channel();
@@ -144,6 +170,8 @@ public class NetworkManager implements NetworkManagerI {
                     channelListFetching.success(channelList);
                 } catch (Exception e) {
                     channelListFetching.error(e);
+                } finally {
+                    closeConnections(inputStream, httpURLConnection);
                 }
             }
         });
@@ -151,18 +179,36 @@ public class NetworkManager implements NetworkManagerI {
 
 
     @Override
-    public void loadImage(final String path, final LoadImageListener loadImageListener) {
+    public void loadImage(final String path, final LoadImageListener loadImageListener, final int
+            maxWidth) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
+                InputStream inputStream = null;
+                HttpURLConnection httpURLConnection = null;
                 try {
-                    InputStream inputStream = createConnection(path);
+                    httpURLConnection = createConnection(path);
+                    inputStream = httpURLConnection.getInputStream();
+                    BitmapFactory.Options o = new BitmapFactory.Options();
+                    o.inJustDecodeBounds = true;
+                    BitmapFactory.decodeStream(inputStream, null, o);
+                    int scale = 1;
+                    while (o.outWidth / scale / 2 >= maxWidth) {
+                        scale *= 2;
+                    }
+                    o = new BitmapFactory.Options();
+                    o.inSampleSize = scale;
+                    closeConnections(inputStream, httpURLConnection);
+                    httpURLConnection = createConnection(path);
+                    inputStream = httpURLConnection.getInputStream();
                     BufferedInputStream bufferedInputStream = new BufferedInputStream
                             (inputStream);
-                    Bitmap bitmap = BitmapFactory.decodeStream(bufferedInputStream);
+                    Bitmap bitmap = BitmapFactory.decodeStream(bufferedInputStream, null, o);
                     loadImageListener.loadSuccess(bitmap);
                 } catch (Exception e) {
                     loadImageListener.error(e);
+                } finally {
+                    closeConnections(inputStream, httpURLConnection);
                 }
             }
         });

@@ -171,18 +171,23 @@ public class TabRssFragment extends ContentFragments implements FeedCountListene
     }
 
     @Override
-    public void settingsChanged(ChangedSettings changedSettings) {
-        for (TabItem tabItem : itemsList) {
-            tabItem.getItemTabRssFragment().settingsChanged
-                    (changedSettings);
-        }
+    public void settingsChanged(final ChangedSettings changedSettings) {
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < customFragmentPagerAdapter.getCount(); i++) {
+                    ((PagerPage) customFragmentPagerAdapter.getItem(i)).settingsChanged
+                            (changedSettings);
+                }
+            }
+        });
     }
 
     class TabItem {
-        private ItemTabRssFragment itemTabRssFragment;
+        private PagerPage itemTabRssFragment;
         private Channel channel;
 
-        public ItemTabRssFragment getItemTabRssFragment() {
+        public PagerPage getItemTabRssFragment() {
             return itemTabRssFragment;
         }
 

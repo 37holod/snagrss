@@ -69,7 +69,8 @@ public class FileManager implements FileManagerI {
     }
 
     @Override
-    public void loadImage(final String path, final LoadImageListener loadImageListener) {
+    public void loadImage(final String path, final LoadImageListener loadImageListener, int
+            maxWidth) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -79,7 +80,7 @@ public class FileManager implements FileManagerI {
                         File file = new File(context.getExternalFilesDir(Environment
                                 .DIRECTORY_PICTURES), fileName);
                         if (!file.exists()) {
-                            loadImageListener.error(new FileNotFoundException());
+                            loadImageListener.loadSuccess(null);
                             return;
                         }
                         BitmapFactory.Options options = new BitmapFactory.Options();

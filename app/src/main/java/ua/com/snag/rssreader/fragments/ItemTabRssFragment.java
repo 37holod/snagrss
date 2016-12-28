@@ -30,7 +30,7 @@ import ua.com.snag.rssreader.model.RssItem;
  * Created by holod on 22.12.16.
  */
 
-public class ItemTabRssFragment extends BaseFragment {
+public class ItemTabRssFragment extends PagerPage {
     private static final String TAG = ItemTabRssFragment.class.getSimpleName();
     public static final String CHANNEL_URL_KEY = "CHANNEL_URL_KEY";
     private ArrayList<RssItem> rssItemList;
@@ -39,6 +39,7 @@ public class ItemTabRssFragment extends BaseFragment {
     private String channelUrl;
     private SwipeRefreshLayout swipeRefreshLayout;
     private boolean orderDesc;
+    private int maxImageWidth;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -55,6 +56,7 @@ public class ItemTabRssFragment extends BaseFragment {
         if (bundle == null) {
             return;
         }
+        maxImageWidth = (int) getResources().getDimension(R.dimen.recycle_item_image_size);
         channelUrl = bundle.getString(CHANNEL_URL_KEY);
 
         fragment_item_tab_rss_rcv = (RecyclerView) view.findViewById(R.id
@@ -141,6 +143,7 @@ public class ItemTabRssFragment extends BaseFragment {
 
     }
 
+    @Override
     public void settingsChanged(ChangedSettings changedSettings) {
 
         if (changedSettings.isFeedDescChanged()) {
@@ -233,7 +236,7 @@ public class ItemTabRssFragment extends BaseFragment {
                     public void error(Exception e) {
                         Core.writeLogError(TAG, e);
                     }
-                });
+                }, maxImageWidth);
             } else {
                 iv.setImageResource(R.mipmap.ic_launcher);
             }

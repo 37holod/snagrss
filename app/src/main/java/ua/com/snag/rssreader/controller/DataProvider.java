@@ -136,16 +136,14 @@ public class DataProvider extends DataProviderAbs {
 
 
     @Override
-    public void loadImage(final String path, final LoadImageListener loadImageListener) {
+    public void loadImage(final String path, final LoadImageListener loadImageListener, final int
+            maxWidth) {
         fileManager.loadImage(path, new LoadImageListener() {
             @Override
             public void loadSuccess(Bitmap bitmap) {
-                loadImageListener.loadSuccess(bitmap);
-            }
-
-            @Override
-            public void error(Exception e) {
-                if (e instanceof FileNotFoundException) {
+                if (bitmap != null) {
+                    loadImageListener.loadSuccess(bitmap);
+                } else {
                     networkManager.loadImage(path, new LoadImageListener() {
                         @Override
                         public void loadSuccess(Bitmap bitmap) {
@@ -165,14 +163,18 @@ public class DataProvider extends DataProviderAbs {
 
                         @Override
                         public void error(Exception e) {
+                            loadImageListener.error(e);
                             Core.writeLogError(TAG, e);
                         }
-                    });
-                } else {
-                    Core.writeLogError(TAG, e);
+                    }, maxWidth);
                 }
             }
-        });
+
+            @Override
+            public void error(Exception e) {
+                Core.writeLogError(TAG, e);
+            }
+        }, maxWidth);
     }
 
     @Override

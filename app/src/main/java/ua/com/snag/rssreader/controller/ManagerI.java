@@ -17,5 +17,5 @@ public interface ManagerI {
     void fetchRssItemList(String channelUrl, RssItemListReceiver rssItemListReceiver, boolean
             orderDesc);
 
-    void loadImage(String path, LoadImageListener loadImageListener);
+    void loadImage(String path, LoadImageListener loadImageListener, int maxWidth);
 }
