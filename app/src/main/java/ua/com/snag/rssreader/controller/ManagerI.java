@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 
 import java.util.List;
 
+import ua.com.snag.rssreader.controller.database.RssItemReceiver;
 import ua.com.snag.rssreader.model.Channel;
 import ua.com.snag.rssreader.model.RssItem;
 
@@ -18,4 +19,6 @@ public interface ManagerI {
             orderDesc);
 
     void loadImage(String path, LoadImageListener loadImageListener, int maxWidth);
+
+
 }

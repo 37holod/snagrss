@@ -8,6 +8,7 @@ import java.util.List;
 import ua.com.snag.rssreader.controller.database.DbManagerI;
 import ua.com.snag.rssreader.controller.database.ManagerInsertListener;
 import ua.com.snag.rssreader.controller.database.ManagerRemoveListener;
+import ua.com.snag.rssreader.controller.database.RssItemReceiver;
 import ua.com.snag.rssreader.controller.file.FileManagerI;
 import ua.com.snag.rssreader.controller.file.SaveImageListener;
 import ua.com.snag.rssreader.controller.network.NetworkManagerI;
@@ -180,5 +181,10 @@ public class DataProvider extends DataProviderAbs {
     @Override
     public void removeChannel(String channelUrl, ManagerRemoveListener managerRemoveListener) {
         dbManager.removeChannel(channelUrl, managerRemoveListener);
+    }
+
+    @Override
+    public void fetchRssItem(String channelUrl, RssItemReceiver rssItemReceiver, String link) {
+        dbManager.fetchRssItem(channelUrl, rssItemReceiver, link);
     }
 }

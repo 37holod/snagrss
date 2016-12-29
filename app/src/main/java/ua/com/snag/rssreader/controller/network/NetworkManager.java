@@ -2,7 +2,6 @@ package ua.com.snag.rssreader.controller.network;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.text.Html;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -82,8 +81,7 @@ public class NetworkManager implements NetworkManagerI {
                                 Core.writeLogError(TAG, ex);
                             }
                             rssItem.setPubDate(pubDate);
-                            String description = getValue(e1, TAG_DESRIPTION);
-                            rssItem.setShortDescription(createShortMessageBody(description));
+                            rssItem.setShortDescription(getValue(e1, TAG_DESRIPTION));
                             rssItem.setImageUrl(fetchPicture(node.getTextContent()));
                             rssItemList.add(rssItem);
                         }
@@ -120,7 +118,7 @@ public class NetworkManager implements NetworkManagerI {
 
     private String fetchPicture(String s) {
 
-        Matcher m = RssConst.URL_PATTERN.matcher(s);
+        Matcher m = RssConst.IMAGE_PATTERN.matcher(s);
         if (m.find()) {
             return m.group(1);
         }
@@ -217,23 +215,6 @@ public class NetworkManager implements NetworkManagerI {
                 }
             }
         });
-    }
-
-
-    public static String createShortMessageBody(String html) {
-        String htmlTextStr = Html.fromHtml(html).toString().replace('\n', (char) 32)
-                .replace((char) 160, (char) 32).replace((char) 65532, (char) 32).trim();
-        ;
-        String body = "";
-        if (!htmlTextStr.isEmpty()) {
-            if (htmlTextStr.length() > 200) {
-                body = htmlTextStr.substring(0, 200);
-            } else {
-                body = htmlTextStr;
-            }
-        }
-
-        return body;
     }
 
 

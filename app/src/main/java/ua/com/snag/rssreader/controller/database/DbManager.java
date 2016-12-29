@@ -92,12 +92,10 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
                     } catch (Exception e) {
                         channelListFetching.error(e);
                     } finally {
-                        try {
+                        if (cursor != null) {
                             cursor.close();
-                            getReadableDatabase().close();
-                        } catch (Exception e) {
-                            Core.writeLogError(TAG, e);
                         }
+                        getReadableDatabase().close();
                     }
                 }
             }
@@ -143,17 +141,46 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
                                         RssItem.CHANNEL + " = ? order by " + RssItem
                                         .PUB_DATE + desc, new
                                         String[]{channelUrl});
-                        ArrayList<RssItem> rssItemList = fillRssItemList(cursor);
+                        ArrayList<RssItem> rssItemList = fillRssItemList(cursor, false);
                         rssItemListReceiver.success(rssItemList);
                     } catch (Exception e) {
                         rssItemListReceiver.error(e);
                     } finally {
-                        try {
+                        if (cursor != null) {
                             cursor.close();
-                            getReadableDatabase().close();
-                        } catch (Exception e) {
-                            Core.writeLogError(TAG, e);
                         }
+                        getReadableDatabase().close();
+                    }
+                }
+            }
+        });
+    }
+
+    public void fetchRssItem(final String channelUrl, final RssItemReceiver
+            rssItemReceiver, final String link) {
+        executor.execute(new Runnable() {
+            @Override
+            public void run() {
+                synchronized (DbManager.this) {
+                    Cursor cursor = null;
+                    try {
+                        cursor = getReadableDatabase().rawQuery(
+                                "select * from " + RssItem.TABLE_NAME + " where " +
+                                        RssItem.CHANNEL + " = ? and " + RssItem.LINK + " = ?", new
+                                        String[]{channelUrl, link});
+                        ArrayList<RssItem> rssItemList = fillRssItemList(cursor, true);
+                        RssItem rssItem = null;
+                        if (!rssItemList.isEmpty()) {
+                            rssItem = rssItemList.get(0);
+                        }
+                        rssItemReceiver.success(rssItem);
+                    } catch (Exception e) {
+                        rssItemReceiver.error(e);
+                    } finally {
+                        if (cursor != null) {
+                            cursor.close();
+                        }
+                        getReadableDatabase().close();
                     }
                 }
             }
@@ -165,7 +192,7 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
 
     }
 
-    private ArrayList<RssItem> fillRssItemList(Cursor cursor) {
+    private ArrayList<RssItem> fillRssItemList(Cursor cursor, boolean addDescription) {
         ArrayList<RssItem> rssItemList = new ArrayList<>();
         if (cursor.moveToFirst()) {
             do {
@@ -184,9 +211,10 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
                         (RssItem.IMAGE_URL)));
                 rssItem.setImagePath(cursor.getString(cursor.getColumnIndex
                         (RssItem.IMAGE_PATH)));
-
-                rssItem.setShortDescription(cursor.getString(cursor.getColumnIndex
-                        (RssItem.SHORT_DESCRIPTION)));
+                if (addDescription) {
+                    rssItem.setShortDescription(cursor.getString(cursor.getColumnIndex
+                            (RssItem.SHORT_DESCRIPTION)));
+                }
                 rssItemList.add(rssItem);
             } while (cursor.moveToNext());
         }
@@ -207,11 +235,7 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
                     } catch (Exception e) {
                         dbInsertListener.error(e);
                     } finally {
-                        try {
-                            getWritableDatabase().close();
-                        } catch (Exception e) {
-                            Core.writeLogError(TAG, e);
-                        }
+                        getWritableDatabase().close();
                     }
                 }
             }
@@ -245,11 +269,7 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
                     } catch (Exception e) {
                         dbInsertListener.error(e);
                     } finally {
-                        try {
-                            getWritableDatabase().close();
-                        } catch (Exception e) {
-                            Core.writeLogError(TAG, e);
-                        }
+                        getWritableDatabase().close();
                     }
                 }
             }
@@ -286,11 +306,7 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
                     } catch (Exception e) {
                         managerRemoveListener.error(e);
                     } finally {
-                        try {
-                            getWritableDatabase().close();
-                        } catch (Exception e) {
-                            Core.writeLogError(TAG, e);
-                        }
+                        getWritableDatabase().close();
                     }
                 }
             }

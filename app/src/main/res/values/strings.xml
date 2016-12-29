@@ -17,7 +17,7 @@
     <string name="ok">Ok</string>
     <string name="cancel">Cancel</string>
     <string name="really_remove_feed">Really remove feed?</string>
-    <string name="read_more"><![CDATA[<font color=#536dfe><u>Read more..</u></font>]]></string>
+    <string name="read_more"><![CDATA[<u>Read more..</u></font>]]></string>
     <string name="by_newest">By newest</string>
     <string name="by_oldest">By oldest</string>
     <string name="connecting">Connecting</string>

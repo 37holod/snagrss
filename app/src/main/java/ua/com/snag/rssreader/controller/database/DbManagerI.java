@@ -27,5 +27,8 @@ public interface DbManagerI extends ManagerI {
 
     void removeChannel(String channelUrl, ManagerRemoveListener managerRemoveListener);
 
+    void fetchRssItem(final String channelUrl, final RssItemReceiver
+            rssItemReceiver, final String link);
+
 
 }

@@ -7,7 +7,12 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
+import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
+import android.text.style.URLSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,8 +29,8 @@ import ua.com.snag.rssreader.R;
 import ua.com.snag.rssreader.controller.Core;
 import ua.com.snag.rssreader.controller.LoadImageListener;
 import ua.com.snag.rssreader.controller.RssItemListReceiver;
+import ua.com.snag.rssreader.controller.database.RssItemReceiver;
 import ua.com.snag.rssreader.controller.settings.FetchBooleanValue;
-import ua.com.snag.rssreader.controller.settings.SettingsManagerI;
 import ua.com.snag.rssreader.model.ChangedSettings;
 import ua.com.snag.rssreader.model.RssItem;
 import ua.com.snag.rssreader.utils.RssConst;
@@ -37,6 +42,7 @@ import ua.com.snag.rssreader.utils.RssConst;
 public class ItemTabRssFragment extends PagerPage {
     private static final String TAG = ItemTabRssFragment.class.getSimpleName();
     public static final String CHANNEL_URL_KEY = "CHANNEL_URL_KEY";
+    public static final int MAX_SYMBOLS = 400;
     private ArrayList<RssItem> rssItemList;
     private RecyclerAdapter recyclerAdapter;
     private RecyclerView fragment_item_tab_rss_rcv;
@@ -178,7 +184,7 @@ public class ItemTabRssFragment extends PagerPage {
 
         class CustomViewHolder extends RecyclerView.ViewHolder {
             TextView tab_rss_recycler_item_title_tv, tab_rss_recycler_item_descr_tv,
-                    tab_rss_recycler_item_more_tv, tab_rss_recycler_item_descr_date;
+                    tab_rss_recycler_item_more_tv, tab_rss_recycler_item_date;
             ImageView tab_rss_recycler_item_title_iv;
 
             CustomViewHolder(View view) {
@@ -189,8 +195,8 @@ public class ItemTabRssFragment extends PagerPage {
                         .tab_rss_recycler_item_descr_tv);
                 tab_rss_recycler_item_more_tv = (TextView) view.findViewById(R.id
                         .tab_rss_recycler_item_more_tv);
-                tab_rss_recycler_item_descr_date = (TextView) view.findViewById(R.id
-                        .tab_rss_recycler_item_descr_date);
+                tab_rss_recycler_item_date = (TextView) view.findViewById(R.id
+                        .tab_rss_recycler_item_date);
                 tab_rss_recycler_item_title_iv = (ImageView) view.findViewById(R.id
                         .tab_rss_recycler_item_title_iv);
 
@@ -210,43 +216,112 @@ public class ItemTabRssFragment extends PagerPage {
         public void onBindViewHolder(final CustomViewHolder holder, int position) {
             final RssItem rssItem = rssItemList.get(position);
             holder.tab_rss_recycler_item_title_tv.setText(rssItem.getTitle());
-            holder.tab_rss_recycler_item_descr_tv.setText(rssItem.getShortDescription());
-
-            final ImageView iv = holder.tab_rss_recycler_item_title_iv;
             holder.tab_rss_recycler_item_more_tv.setText(readMore);
-            View.OnClickListener onClickListener = new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    for (Object listener
-                            : getListenerByClass(FragmentManagerI.class)) {
-                        WebViewFragment webViewFragment = new WebViewFragment();
-                        Bundle bundle = new Bundle();
-                        bundle.putString(WebViewFragment.RSS_ITEM_URL_KEY, rssItem.getLink());
-                        webViewFragment.setArguments(bundle);
-                        ((FragmentManagerI) listener).addToContentFragment(webViewFragment, true);
-                    }
-                }
-            };
+            View.OnClickListener onClickListener = createClickListener(rssItem);
             holder.tab_rss_recycler_item_more_tv.setOnClickListener(onClickListener);
-            iv.setOnClickListener(onClickListener);
             try {
-                holder.tab_rss_recycler_item_descr_date.setText(simpleDateFormat.format(new
+                holder.tab_rss_recycler_item_date.setText(simpleDateFormat.format(new
                         Date(Long.parseLong(rssItem.getPubDate()))));
             } catch (IllegalArgumentException e) {
-                holder.tab_rss_recycler_item_descr_date.setText(rssItem.getPubDate());
+                holder.tab_rss_recycler_item_date.setText(rssItem.getPubDate());
                 Core.writeLogError(TAG, e);
             }
+            bindPicture(holder, onClickListener, rssItem);
+            bindDescription(holder, onClickListener, rssItem);
+
+        }
+
+        private View.OnClickListener createClickListener(final RssItem rssItem) {
+            return new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    launchBrowser(rssItem.getLink());
+                }
+            };
+        }
+
+        private void launchBrowser(String link) {
+            for (Object listener
+                    : getListenerByClass(FragmentManagerI.class)) {
+                WebViewFragment webViewFragment = new WebViewFragment();
+                Bundle bundle = new Bundle();
+                bundle.putString(WebViewFragment.RSS_ITEM_URL_KEY, link);
+                webViewFragment.setArguments(bundle);
+                ((FragmentManagerI) listener).addToContentFragment(webViewFragment, true);
+            }
+        }
+
+        private void bindDescription(CustomViewHolder holder, View.OnClickListener
+                onClickListener, RssItem rssItem) {
+            final TextView descriptionTv = holder.tab_rss_recycler_item_descr_tv;
+            descriptionTv.setText(null);
+            dataProvider.fetchRssItem(rssItem.getChannel(), new RssItemReceiver() {
+                void setDescription(final String description) {
+                    setTextViewHTML(descriptionTv, description);
+
+                }
+
+                void makeLinkClickable(SpannableStringBuilder strBuilder, final URLSpan
+                        span) {
+                    int start = strBuilder.getSpanStart(span);
+                    int end = strBuilder.getSpanEnd(span);
+                    int flags = strBuilder.getSpanFlags(span);
+                    ClickableSpan clickable = new ClickableSpan() {
+                        public void onClick(View view) {
+                            launchBrowser(span.getURL());
+                        }
+                    };
+                    strBuilder.setSpan(clickable, start, end, flags);
+                    strBuilder.removeSpan(span);
+                }
+
+                void setTextViewHTML(final TextView text, String html) {
+                    html = html.replaceAll(RssConst.IMAGE_REG, "");
+                    CharSequence sequence = Html.fromHtml(html);
+                    final SpannableStringBuilder strBuilder = new SpannableStringBuilder(sequence);
+                    URLSpan[] urls = strBuilder.getSpans(0, sequence.length(), URLSpan.class);
+                    for (URLSpan span : urls) {
+                        makeLinkClickable(strBuilder, span);
+                    }
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            text.setText(strBuilder);
+                            text.setMovementMethod(LinkMovementMethod.getInstance());
+                        }
+                    });
+
+                }
 
 
+                @Override
+                public void success(final RssItem fullDescrRssItem) {
+                    setDescription(fullDescrRssItem
+                            .getShortDescription());
+
+                }
+
+                @Override
+                public void error(Exception e) {
+                    Core.writeLogError(TAG, e);
+                    setDescription(e.getMessage());
+                }
+            }, rssItem.getLink());
+        }
+
+        private void bindPicture(CustomViewHolder holder, View.OnClickListener onClickListener,
+                                 RssItem rssItem) {
+            final ImageView tab_rss_recycler_item_title_iv = holder.tab_rss_recycler_item_title_iv;
+            tab_rss_recycler_item_title_iv.setOnClickListener(onClickListener);
             if (rssItem.getImageUrl() != null) {
-                iv.setImageBitmap(null);
+                tab_rss_recycler_item_title_iv.setImageBitmap(null);
                 dataProvider.loadImage(rssItem.getImageUrl(), new LoadImageListener() {
                     @Override
                     public void loadSuccess(final Bitmap bitmap) {
                         handler.post(new Runnable() {
                             @Override
                             public void run() {
-                                iv.setImageBitmap(bitmap);
+                                tab_rss_recycler_item_title_iv.setImageBitmap(bitmap);
                             }
                         });
                     }
@@ -257,9 +332,10 @@ public class ItemTabRssFragment extends PagerPage {
                     }
                 }, maxImageWidth);
             } else {
-                iv.setImageResource(R.mipmap.ic_launcher);
+                tab_rss_recycler_item_title_iv.setImageResource(R.mipmap.ic_launcher);
             }
         }
+
 
         @Override
         public int getItemCount() {

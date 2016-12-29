@@ -7,6 +7,7 @@ import java.util.List;
 import ua.com.snag.rssreader.controller.database.DbManagerI;
 import ua.com.snag.rssreader.controller.database.ManagerInsertListener;
 import ua.com.snag.rssreader.controller.database.ManagerRemoveListener;
+import ua.com.snag.rssreader.controller.database.RssItemReceiver;
 import ua.com.snag.rssreader.controller.file.FileManagerI;
 import ua.com.snag.rssreader.controller.file.SaveImageListener;
 import ua.com.snag.rssreader.controller.network.NetworkManagerI;
@@ -66,6 +67,11 @@ public abstract class DataProviderAbs implements DbManagerI, FileManagerI,
 
     public void refreshRssItemList(String channelUrl, RssItemListReceiver rssItemListReceiver,
                                    boolean orderDesc) {
+
+    }
+
+    @Override
+    public void fetchRssItem(String channelUrl, RssItemReceiver rssItemReceiver, String link) {
 
     }
 }

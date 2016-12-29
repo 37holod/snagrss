@@ -39,11 +39,14 @@
                 style="@style/CustomTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:maxLines="4"
+                android:minLines="4"
                 android:padding="@dimen/fragment_padding"
-                android:text="TextView"/>
+                android:text="TextView"
+                android:textColorLink="@color/accent"/>
 
             <TextView
-                android:id="@+id/tab_rss_recycler_item_descr_date"
+                android:id="@+id/tab_rss_recycler_item_date"
                 style="@style/CustomTextView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -56,7 +59,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:padding="@dimen/fragment_padding"
-                android:text="@string/read_more"/>
+                android:text="@string/read_more"
+                android:textColor="@color/accent"/>
         </LinearLayout>
     </LinearLayout>
 </RelativeLayout>
