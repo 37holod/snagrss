@@ -65,7 +65,6 @@ public class ItemTabRssFragment extends PagerPage {
         }
         maxImageWidth = (int) getResources().getDimension(R.dimen.recycle_item_image_size);
         channelUrl = bundle.getString(CHANNEL_URL_KEY);
-
         fragment_item_tab_rss_rcv = (RecyclerView) view.findViewById(R.id
                 .fragment_item_tab_rss_rcv);
         rssItemList = new ArrayList<>();

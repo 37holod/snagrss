@@ -55,4 +55,20 @@ public class Channel {
     public void setChannelDescription(String channelDescription) {
         this.channelDescription = channelDescription;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Channel channel = (Channel) o;
+
+        return url.equals(channel.url);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return url.hashCode();
+    }
 }

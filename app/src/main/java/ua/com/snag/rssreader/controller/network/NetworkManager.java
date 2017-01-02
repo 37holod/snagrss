@@ -217,12 +217,12 @@ public class NetworkManager implements NetworkManagerI {
     }
 
 
-    String getValue(Element item, String str) {
+    private String getValue(Element item, String str) {
         NodeList n = item.getElementsByTagName(str);
         return this.getElementValue(n.item(0));
     }
 
-    final String getElementValue(Node elem) {
+    private String getElementValue(Node elem) {
         Node child;
         if (elem != null) {
             if (elem.hasChildNodes()) {

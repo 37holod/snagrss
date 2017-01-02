@@ -56,7 +56,7 @@ public class Core extends Application {
     }
 
     public static void writeLog(String tag, String text) {
-        Log.d(tag, text);
+        Log.d(tag, text + " <" + Thread.currentThread().getName() + ">");
     }
 
     public static void writeLogError(String tag, Exception e) {

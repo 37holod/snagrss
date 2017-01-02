@@ -22,6 +22,15 @@ import static android.support.test.espresso.matcher.ViewMatchers.withId;
 
 public class MainActivityTest {
     private IdlingResourceImpl mIdlingResource;
+    private String[] arr = new String[]{
+            "http://rss.cnn.com/rss/cnn_topstories.rss",
+            "http://feeds.nytimes.com/nyt/rss/HomePage",
+            "http://hosted.ap.org/lineups/USHEADS-rss_2.0.xml?SITE=RANDOM&SECTION=HOME",
+            "http://rssfeeds.usatoday.com/usatoday-NewsTopStories",
+            "http://www.npr.org/rss/rss.php?id=1001",
+            "http://feeds.reuters.com/reuters/topNews",
+            "http://newsrss.bbc.co.uk/rss/newsonline_world_edition/americas/rss.xml"
+    };
     @Rule
     public ActivityTestRule<MainActivity> mActivityRule = new ActivityTestRule<>(
             MainActivity.class);
@@ -30,21 +39,20 @@ public class MainActivityTest {
     @Before
     public void registerIdlingResource() {
         mIdlingResource = mActivityRule.getActivity().getIdlingResource();
-        // To prove that the test fails, omit this call:
-        Espresso.registerIdlingResources(mIdlingResource);
     }
 
     @Test
-    public void changeText_sameActivity() {
-        onView(withId(R.id.fragment_add_new_feed_url_et)).perform(replaceText("http://kotaku" +
-                ".com/vip.xml"));
-        onView(withId(R.id.fragment_add_new_feed_bt)).perform(click());
+    public void addSomeFeeds() {
+        for (String link : arr) {
+            Espresso.registerIdlingResources(mIdlingResource);
+            mActivityRule.getActivity().addNewFeedFragment();
+            onView(withId(R.id.fragment_add_new_feed_url_et)).perform(replaceText(link));
+            onView(withId(R.id.fragment_add_new_feed_bt)).perform(click());
+            if (mIdlingResource != null) {
+                Espresso.unregisterIdlingResources(mIdlingResource);
+            }
+        }
+
     }
 
-    @After
-    public void unregisterIdlingResource() {
-        if (mIdlingResource != null) {
-            Espresso.unregisterIdlingResources(mIdlingResource);
-        }
-    }
 }

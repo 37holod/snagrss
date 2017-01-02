@@ -9,7 +9,12 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import ua.com.snag.rssreader.R;
 import ua.com.snag.rssreader.controller.Core;
@@ -25,7 +30,7 @@ public class TabRssFragment extends ContentFragments implements FeedCountListene
         ChangeSettingsListener {
     private static final String TAG = TabRssFragment.class.getSimpleName();
     private static final String SAVE_PAGE_NUMBER = "SAVE_PAGE_NUMBER";
-    private ArrayList<TabItem> itemsList;
+    private ArrayList<Channel> itemsList;
     private ViewPager fragment_tab_rss_vp;
     private CustomFragmentPagerAdapter customFragmentPagerAdapter;
     private int currentPage;
@@ -78,17 +83,12 @@ public class TabRssFragment extends ContentFragments implements FeedCountListene
     private void refreshAdapter() {
         dataProvider.fetchChannelList(new DataReceiver<List<Channel>>() {
             @Override
-            public void success(List<Channel> channelList) {
-                final ArrayList<TabItem> tempItemsList = new ArrayList<TabItem>();
-                for (Channel channel : channelList) {
-                    TabItem tabItem = createTabItem(channel);
-                    tempItemsList.add(tabItem);
-                }
+            public void success(final List<Channel> tempChannelList) {
                 handler.post(new Runnable() {
                     @Override
                     public void run() {
                         itemsList.clear();
-                        itemsList.addAll(tempItemsList);
+                        itemsList.addAll(tempChannelList);
                         customFragmentPagerAdapter.notifyDataSetChanged();
                         if (savedInstanceState != null) {
                             currentPage = savedInstanceState.getInt(SAVE_PAGE_NUMBER);
@@ -110,26 +110,17 @@ public class TabRssFragment extends ContentFragments implements FeedCountListene
         });
     }
 
-    private TabItem createTabItem(Channel channel) {
-        TabItem tabItem = new TabItem();
-        tabItem.setChannel(channel);
-        ItemTabRssFragment itemTabRssFragment = new ItemTabRssFragment();
-        Bundle bundle = new Bundle();
-        bundle.putString(ItemTabRssFragment.CHANNEL_URL_KEY, channel.getUrl());
-        itemTabRssFragment.setArguments(bundle);
-        tabItem.setItemTabRssFragment(itemTabRssFragment);
-        return tabItem;
-    }
-
     @Override
     public void addNewFeed(final Channel channel) {
+        if (itemsList.contains(channel)) {
+            return;
+        }
         handler.post(new Runnable() {
             @Override
             public void run() {
-                TabItem tabItem = createTabItem(channel);
-                itemsList.add(tabItem);
+                itemsList.add(channel);
                 customFragmentPagerAdapter.notifyDataSetChanged();
-                fragment_tab_rss_vp.setCurrentItem(itemsList.indexOf(tabItem));
+                fragment_tab_rss_vp.setCurrentItem(itemsList.indexOf(channel));
             }
         });
     }
@@ -151,8 +142,8 @@ public class TabRssFragment extends ContentFragments implements FeedCountListene
             @Override
             public void run() {
                 try {
-                    TabItem tabItem = searchTab(url);
-                    fragment_tab_rss_vp.setCurrentItem(itemsList.indexOf(tabItem), true);
+                    Channel channel = searchTab(url);
+                    fragment_tab_rss_vp.setCurrentItem(itemsList.indexOf(channel), true);
                 } catch (Exception e) {
                     Core.writeLogError(TAG, e);
                 }
@@ -161,10 +152,10 @@ public class TabRssFragment extends ContentFragments implements FeedCountListene
         });
     }
 
-    private TabItem searchTab(String url) throws Exception {
-        for (TabItem tabItem : itemsList) {
-            if (url.equals(tabItem.getChannel().getUrl())) {
-                return tabItem;
+    private Channel searchTab(String url) throws Exception {
+        for (Channel channel : itemsList) {
+            if (url.equals(channel.getUrl())) {
+                return channel;
             }
         }
         throw new Exception("no tabs");
@@ -175,49 +166,52 @@ public class TabRssFragment extends ContentFragments implements FeedCountListene
         handler.post(new Runnable() {
             @Override
             public void run() {
-                for (int i = 0; i < customFragmentPagerAdapter.getCount(); i++) {
-                    ((PagerPage) customFragmentPagerAdapter.getItem(i)).settingsChanged
-                            (changedSettings);
+                Iterator entries = customFragmentPagerAdapter.getAliveFragments();
+                while (entries.hasNext()) {
+                    Map.Entry entry = (Map.Entry) entries.next();
+                    ((PagerPage) entry.getValue()).settingsChanged(changedSettings);
                 }
             }
         });
     }
 
-    class TabItem {
-        private PagerPage itemTabRssFragment;
-        private Channel channel;
-
-        public PagerPage getItemTabRssFragment() {
-            return itemTabRssFragment;
-        }
-
-        public void setItemTabRssFragment(ItemTabRssFragment itemTabRssFragment) {
-            this.itemTabRssFragment = itemTabRssFragment;
-        }
-
-        public Channel getChannel() {
-            return channel;
-        }
-
-        public void setChannel(Channel channel) {
-            this.channel = channel;
-        }
-    }
 
     private class CustomFragmentPagerAdapter extends FragmentStatePagerAdapter {
 
         public CustomFragmentPagerAdapter(FragmentManager fm) {
             super(fm);
+            pagerMap = new HashMap<>();
         }
+
+        public HashMap<Integer, PagerPage> pagerMap;
+
+        public Iterator<Map.Entry<Integer, PagerPage>> getAliveFragments() {
+            return pagerMap.entrySet().iterator();
+        }
+
 
         @Override
         public BaseFragment getItem(int position) {
-            return itemsList.get(position).getItemTabRssFragment();
+            Channel channel = itemsList.get(position);
+            PagerPage pagerPage = new ItemTabRssFragment();
+            Bundle bundle = new Bundle();
+            bundle.putString(ItemTabRssFragment.CHANNEL_URL_KEY, channel.getUrl());
+            pagerPage.setArguments(bundle);
+            pagerMap.put(position, pagerPage);
+            return pagerPage;
         }
+
+
+        @Override
+        public void destroyItem(ViewGroup container, int position, Object object) {
+            pagerMap.remove(position);
+            super.destroyItem(container, position, object);
+        }
+
 
         @Override
         public CharSequence getPageTitle(int position) {
-            return itemsList.get(position).getChannel().getTitle();
+            return itemsList.get(position).getTitle();
         }
 
         @Override

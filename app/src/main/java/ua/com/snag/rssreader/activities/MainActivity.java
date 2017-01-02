@@ -13,6 +13,7 @@ import android.view.MenuItem;
 import ua.com.snag.rssreader.R;
 import ua.com.snag.rssreader.controller.Core;
 import ua.com.snag.rssreader.controller.ProcessListener;
+import ua.com.snag.rssreader.fragments.AddNewFeedFragment;
 import ua.com.snag.rssreader.fragments.BaseFragment;
 import ua.com.snag.rssreader.fragments.ChangeSettingsListener;
 import ua.com.snag.rssreader.fragments.FragmentManagerI;
@@ -139,4 +140,12 @@ public class MainActivity extends BaseActivity implements FragmentManagerI, Navi
     public IdlingResourceImpl getIdlingResource() {
         return idlingResource;
     }
+
+    @VisibleForTesting
+    @NonNull
+    public void addNewFeedFragment() {
+        addToContentFragment(new AddNewFeedFragment(), true);
+    }
+
+
 }
