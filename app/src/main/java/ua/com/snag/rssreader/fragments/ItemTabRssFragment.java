@@ -169,7 +169,7 @@ public class ItemTabRssFragment extends PagerPage {
     }
 
 
-    public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.CustomViewHolder> {
+    private class RecyclerAdapter extends RecyclerView.Adapter<RecyclerAdapter.CustomViewHolder> {
         Spanned readMore;
         SimpleDateFormat simpleDateFormat;
 

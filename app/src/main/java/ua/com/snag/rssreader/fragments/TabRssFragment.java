@@ -178,14 +178,14 @@ public class TabRssFragment extends ContentFragments implements FeedCountListene
 
     private class CustomFragmentPagerAdapter extends FragmentStatePagerAdapter {
 
-        public CustomFragmentPagerAdapter(FragmentManager fm) {
+        CustomFragmentPagerAdapter(FragmentManager fm) {
             super(fm);
             pagerMap = new HashMap<>();
         }
 
-        public HashMap<Integer, PagerPage> pagerMap;
+        HashMap<Integer, PagerPage> pagerMap;
 
-        public Iterator<Map.Entry<Integer, PagerPage>> getAliveFragments() {
+        Iterator<Map.Entry<Integer, PagerPage>> getAliveFragments() {
             return pagerMap.entrySet().iterator();
         }
 
