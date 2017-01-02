@@ -2,8 +2,9 @@ package ua.com.snag.rssreader.controller.database;
 
 import java.util.List;
 
-import ua.com.snag.rssreader.controller.ChannelListReceiver;
+import ua.com.snag.rssreader.controller.DataReceiver;
 import ua.com.snag.rssreader.controller.ManagerI;
+import ua.com.snag.rssreader.controller.ProcessListener;
 import ua.com.snag.rssreader.model.Channel;
 import ua.com.snag.rssreader.model.RssItem;
 
@@ -15,20 +16,18 @@ import ua.com.snag.rssreader.model.RssItem;
 public interface DbManagerI extends ManagerI {
 
 
-    void fetchChannelList(ChannelListReceiver channelListFetching);
+    void fetchChannelList(DataReceiver<List<Channel>> dataReceiver);
 
 
-    void insertChannelList(List<Channel> channelList, ManagerInsertListener
-            dbInsertListener);
+    void insertChannelList(List<Channel> channelList, ProcessListener processListener);
 
-    void insertRssItemList(List<RssItem> channelList, ManagerInsertListener
-            dbInsertListener);
+    void insertRssItemList(List<RssItem> channelList, ProcessListener processListener);
 
 
-    void removeChannel(String channelUrl, ManagerRemoveListener managerRemoveListener);
+    void removeChannel(String channelUrl, ProcessListener processListener);
 
-    void fetchRssItem(final String channelUrl, final RssItemReceiver
-            rssItemReceiver, final String link);
+    void fetchRssItem(final String channelUrl, final DataReceiver<RssItem> dataReceiver, final
+    String link);
 
 
 }

@@ -11,8 +11,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import ua.com.snag.rssreader.R;
-import ua.com.snag.rssreader.controller.AsyncExecutionListener;
 import ua.com.snag.rssreader.controller.Core;
+import ua.com.snag.rssreader.controller.ProcessListener;
 import ua.com.snag.rssreader.fragments.BaseFragment;
 import ua.com.snag.rssreader.fragments.ChangeSettingsListener;
 import ua.com.snag.rssreader.fragments.FragmentManagerI;
@@ -115,7 +115,7 @@ public class MainActivity extends BaseActivity implements FragmentManagerI, Navi
     }
 
     public void setDesc(boolean desc) {
-        settingsManager.setFeedOrderDesc(new AsyncExecutionListener() {
+        settingsManager.setFeedOrderDesc(new ProcessListener() {
             @Override
             public void success() {
                 ChangedSettings changedSettings = new ChangedSettings();

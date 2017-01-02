@@ -14,10 +14,10 @@ import java.util.List;
 
 import ua.com.snag.rssreader.R;
 import ua.com.snag.rssreader.activities.BaseActivity;
-import ua.com.snag.rssreader.controller.ChannelListReceiver;
 import ua.com.snag.rssreader.controller.Core;
+import ua.com.snag.rssreader.controller.DataReceiver;
+import ua.com.snag.rssreader.controller.ProcessListener;
 import ua.com.snag.rssreader.controller.database.DbManagerI;
-import ua.com.snag.rssreader.controller.database.ManagerRemoveListener;
 import ua.com.snag.rssreader.model.Channel;
 
 /**
@@ -50,7 +50,7 @@ public class NaviDrawer extends BaseFragment implements FeedCountListener {
     }
 
     private void refreshData() {
-        dataProvider.fetchChannelList(new ChannelListReceiver() {
+        dataProvider.fetchChannelList(new DataReceiver<List<Channel>>() {
             @Override
             public void success(List<Channel> channelList) {
                 refreshListView(channelList);
@@ -168,9 +168,9 @@ public class NaviDrawer extends BaseFragment implements FeedCountListener {
 
                 @Override
                 public void okPressed() {
-                    dataProvider.removeChannel(channel.getUrl(), new ManagerRemoveListener() {
+                    dataProvider.removeChannel(channel.getUrl(), new ProcessListener() {
                         @Override
-                        public void removingSuccess() {
+                        public void success() {
                             for (Object listener
                                     : getListenerByClass(FeedCountListener.class)) {
                                 ((FeedCountListener) listener).removeFeed(channel);

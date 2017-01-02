@@ -12,8 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ua.com.snag.rssreader.R;
-import ua.com.snag.rssreader.controller.ChannelListReceiver;
 import ua.com.snag.rssreader.controller.Core;
+import ua.com.snag.rssreader.controller.DataReceiver;
 import ua.com.snag.rssreader.model.ChangedSettings;
 import ua.com.snag.rssreader.model.Channel;
 
@@ -76,7 +76,7 @@ public class TabRssFragment extends ContentFragments implements FeedCountListene
 
 
     private void refreshAdapter() {
-        dataProvider.fetchChannelList(new ChannelListReceiver() {
+        dataProvider.fetchChannelList(new DataReceiver<List<Channel>>() {
             @Override
             public void success(List<Channel> channelList) {
                 final ArrayList<TabItem> tempItemsList = new ArrayList<TabItem>();

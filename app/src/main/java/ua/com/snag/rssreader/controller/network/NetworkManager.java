@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -21,10 +22,8 @@ import java.util.regex.Matcher;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import ua.com.snag.rssreader.controller.ChannelListReceiver;
 import ua.com.snag.rssreader.controller.Core;
-import ua.com.snag.rssreader.controller.LoadImageListener;
-import ua.com.snag.rssreader.controller.RssItemListReceiver;
+import ua.com.snag.rssreader.controller.DataReceiver;
 import ua.com.snag.rssreader.model.Channel;
 import ua.com.snag.rssreader.model.RssItem;
 import ua.com.snag.rssreader.utils.RssConst;
@@ -50,8 +49,8 @@ public class NetworkManager implements NetworkManagerI {
 
 
     @Override
-    public void fetchRssItemList(final String channelUrl, final RssItemListReceiver
-            rssItemListReceiver, boolean orderDesc) {
+    public void fetchRssItemList(final String channelUrl, final DataReceiver<List<RssItem>>
+            dataReceiver, boolean orderDesc) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -86,10 +85,10 @@ public class NetworkManager implements NetworkManagerI {
                             rssItemList.add(rssItem);
                         }
                     }
-                    rssItemListReceiver.success(rssItemList);
+                    dataReceiver.success(rssItemList);
 
                 } catch (Exception e) {
-                    rssItemListReceiver.error(e);
+                    dataReceiver.error(e);
                 } finally {
                     closeConnections(inputStream, httpURLConnection);
                 }
@@ -149,8 +148,8 @@ public class NetworkManager implements NetworkManagerI {
     }
 
     @Override
-    public void fetchChannel(final String channelUrl, final ChannelListReceiver
-            channelListFetching) {
+    public void fetchChannel(final String channelUrl, final DataReceiver<List<Channel>>
+            dataReceiver) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -169,9 +168,9 @@ public class NetworkManager implements NetworkManagerI {
                     channel.setUrl(channelUrl);
                     channel.setChannelDescription(getValue(e, TAG_DESRIPTION));
                     channelList.add(channel);
-                    channelListFetching.success(channelList);
+                    dataReceiver.success(channelList);
                 } catch (Exception e) {
-                    channelListFetching.error(e);
+                    dataReceiver.error(e);
                 } finally {
                     closeConnections(inputStream, httpURLConnection);
                 }
@@ -181,7 +180,7 @@ public class NetworkManager implements NetworkManagerI {
 
 
     @Override
-    public void loadImage(final String path, final LoadImageListener loadImageListener, final int
+    public void loadImage(final String path, final DataReceiver<Bitmap> dataReceiver, final int
             maxWidth) {
         executor.execute(new Runnable() {
             @Override
@@ -207,9 +206,9 @@ public class NetworkManager implements NetworkManagerI {
                             (inputStream);
                     Bitmap bitmap = BitmapFactory.decodeStream(bufferedInputStream, null, o);
 
-                    loadImageListener.loadSuccess(bitmap);
+                    dataReceiver.success(bitmap);
                 } catch (Exception e) {
-                    loadImageListener.error(e);
+                    dataReceiver.error(e);
                 } finally {
                     closeConnections(inputStream, httpURLConnection);
                 }

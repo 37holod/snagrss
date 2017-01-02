@@ -27,10 +27,7 @@ import java.util.Locale;
 
 import ua.com.snag.rssreader.R;
 import ua.com.snag.rssreader.controller.Core;
-import ua.com.snag.rssreader.controller.LoadImageListener;
-import ua.com.snag.rssreader.controller.RssItemListReceiver;
-import ua.com.snag.rssreader.controller.database.RssItemReceiver;
-import ua.com.snag.rssreader.controller.settings.FetchBooleanValue;
+import ua.com.snag.rssreader.controller.DataReceiver;
 import ua.com.snag.rssreader.model.ChangedSettings;
 import ua.com.snag.rssreader.model.RssItem;
 import ua.com.snag.rssreader.utils.RssConst;
@@ -79,9 +76,9 @@ public class ItemTabRssFragment extends PagerPage {
         swipeRefreshLayout = (SwipeRefreshLayout) view.findViewById(R.id
                 .fragment_item_tab_rss_srl);
         initActions();
-        settingsManager.isFeedOrderDesc(new FetchBooleanValue() {
+        settingsManager.isFeedOrderDesc(new DataReceiver<Boolean>() {
             @Override
-            public void success(boolean value) {
+            public void success(Boolean value) {
                 orderDesc = value;
                 refreshData();
             }
@@ -99,7 +96,7 @@ public class ItemTabRssFragment extends PagerPage {
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                dataProvider.refreshRssItemList(channelUrl, new RssItemListReceiver() {
+                dataProvider.refreshRssItemList(channelUrl, new DataReceiver<List<RssItem>>() {
                     @Override
                     public void success(List<RssItem> rssItemList) {
                         notifyAdapter(rssItemList);
@@ -138,7 +135,7 @@ public class ItemTabRssFragment extends PagerPage {
     }
 
     private void refreshData() {
-        dataProvider.fetchRssItemList(channelUrl, new RssItemListReceiver() {
+        dataProvider.fetchRssItemList(channelUrl, new DataReceiver<List<RssItem>>() {
             @Override
             public void success(final List<RssItem> tempRssItemList) {
                 notifyAdapter(tempRssItemList);
@@ -157,9 +154,9 @@ public class ItemTabRssFragment extends PagerPage {
     public void settingsChanged(ChangedSettings changedSettings) {
 
         if (changedSettings.isFeedDescChanged()) {
-            settingsManager.isFeedOrderDesc(new FetchBooleanValue() {
+            settingsManager.isFeedOrderDesc(new DataReceiver<Boolean>() {
                 @Override
-                public void success(boolean value) {
+                public void success(Boolean value) {
                     orderDesc = value;
                     refreshData();
                 }
@@ -255,7 +252,7 @@ public class ItemTabRssFragment extends PagerPage {
                 onClickListener, RssItem rssItem) {
             final TextView descriptionTv = holder.tab_rss_recycler_item_descr_tv;
             descriptionTv.setText(null);
-            dataProvider.fetchRssItem(rssItem.getChannel(), new RssItemReceiver() {
+            dataProvider.fetchRssItem(rssItem.getChannel(), new DataReceiver<RssItem>() {
                 void setDescription(final String description) {
                     setTextViewHTML(descriptionTv, description);
 
@@ -315,9 +312,9 @@ public class ItemTabRssFragment extends PagerPage {
             tab_rss_recycler_item_title_iv.setOnClickListener(onClickListener);
             if (rssItem.getImageUrl() != null) {
                 tab_rss_recycler_item_title_iv.setImageBitmap(null);
-                dataProvider.loadImage(rssItem.getImageUrl(), new LoadImageListener() {
+                dataProvider.loadImage(rssItem.getImageUrl(), new DataReceiver<Bitmap>() {
                     @Override
-                    public void loadSuccess(final Bitmap bitmap) {
+                    public void success(final Bitmap bitmap) {
                         handler.post(new Runnable() {
                             @Override
                             public void run() {

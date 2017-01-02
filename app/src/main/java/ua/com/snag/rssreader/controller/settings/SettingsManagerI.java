@@ -1,6 +1,8 @@
 package ua.com.snag.rssreader.controller.settings;
 
-import ua.com.snag.rssreader.controller.AsyncExecutionListener;
+
+import ua.com.snag.rssreader.controller.DataReceiver;
+import ua.com.snag.rssreader.controller.ProcessListener;
 
 /**
  * Created by holod on 23.12.16.
@@ -8,7 +10,7 @@ import ua.com.snag.rssreader.controller.AsyncExecutionListener;
 
 public interface SettingsManagerI {
 
-    void isFeedOrderDesc(FetchBooleanValue fetchBooleanValue);
+    void isFeedOrderDesc(DataReceiver<Boolean> dataReceiver);
 
-    void setFeedOrderDesc(AsyncExecutionListener asyncExecutionListener, boolean value);
+    void setFeedOrderDesc(ProcessListener processListener, boolean value);
 }

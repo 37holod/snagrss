@@ -11,8 +11,8 @@ import android.widget.ProgressBar;
 import java.util.List;
 
 import ua.com.snag.rssreader.R;
-import ua.com.snag.rssreader.controller.ChannelListReceiver;
 import ua.com.snag.rssreader.controller.Core;
+import ua.com.snag.rssreader.controller.DataReceiver;
 import ua.com.snag.rssreader.model.Channel;
 
 /**
@@ -60,7 +60,7 @@ public class AddNewFeedFragment extends ContentFragments {
                 setPb(View.VISIBLE);
                 idlingResource.setIdleState(false);
                 dataProvider.fetchChannel(fragment_add_new_feed_url_et.getText().toString(), new
-                        ChannelListReceiver() {
+                        DataReceiver<List<Channel>>() {
                             @Override
                             public void success(List<Channel> channelList) {
                                 setPb(View.INVISIBLE);

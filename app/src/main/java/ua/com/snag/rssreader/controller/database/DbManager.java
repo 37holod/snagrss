@@ -5,15 +5,15 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.graphics.Bitmap;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import ua.com.snag.rssreader.controller.ChannelListReceiver;
 import ua.com.snag.rssreader.controller.Core;
-import ua.com.snag.rssreader.controller.LoadImageListener;
-import ua.com.snag.rssreader.controller.RssItemListReceiver;
+import ua.com.snag.rssreader.controller.DataReceiver;
+import ua.com.snag.rssreader.controller.ProcessListener;
 import ua.com.snag.rssreader.model.Channel;
 import ua.com.snag.rssreader.model.RssItem;
 
@@ -78,7 +78,7 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
 
 
     @Override
-    public void fetchChannelList(final ChannelListReceiver channelListFetching) {
+    public void fetchChannelList(final DataReceiver<List<Channel>> dataReceiver) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -88,9 +88,9 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
                         cursor = getReadableDatabase().rawQuery(
                                 "select * from " + Channel.TABLE_NAME, null);
                         ArrayList<Channel> channelList = fillChannelList(cursor);
-                        channelListFetching.success(channelList);
+                        dataReceiver.success(channelList);
                     } catch (Exception e) {
-                        channelListFetching.error(e);
+                        dataReceiver.error(e);
                     } finally {
                         if (cursor != null) {
                             cursor.close();
@@ -127,8 +127,8 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
 
 
     @Override
-    public void fetchRssItemList(final String channelUrl, final RssItemListReceiver
-            rssItemListReceiver, final boolean orderDesc) {
+    public void fetchRssItemList(final String channelUrl, final DataReceiver<List<RssItem>>
+            dataReceiver, final boolean orderDesc) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -142,9 +142,9 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
                                         .PUB_DATE + desc, new
                                         String[]{channelUrl});
                         ArrayList<RssItem> rssItemList = fillRssItemList(cursor, false);
-                        rssItemListReceiver.success(rssItemList);
+                        dataReceiver.success(rssItemList);
                     } catch (Exception e) {
-                        rssItemListReceiver.error(e);
+                        dataReceiver.error(e);
                     } finally {
                         if (cursor != null) {
                             cursor.close();
@@ -156,8 +156,8 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
         });
     }
 
-    public void fetchRssItem(final String channelUrl, final RssItemReceiver
-            rssItemReceiver, final String link) {
+    public void fetchRssItem(final String channelUrl, final DataReceiver<RssItem> dataReceiver,
+                             final String link) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -173,9 +173,9 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
                         if (!rssItemList.isEmpty()) {
                             rssItem = rssItemList.get(0);
                         }
-                        rssItemReceiver.success(rssItem);
+                        dataReceiver.success(rssItem);
                     } catch (Exception e) {
-                        rssItemReceiver.error(e);
+                        dataReceiver.error(e);
                     } finally {
                         if (cursor != null) {
                             cursor.close();
@@ -188,7 +188,7 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
     }
 
     @Override
-    public void loadImage(String path, LoadImageListener loadImageListener, int maxWidth) {
+    public void loadImage(String path, DataReceiver<Bitmap> dataReceiver, int maxWidth) {
 
     }
 
@@ -222,8 +222,8 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
     }
 
     @Override
-    public void insertChannelList(final List<Channel> channelList, final ManagerInsertListener
-            dbInsertListener) {
+    public void insertChannelList(final List<Channel> channelList, final ProcessListener
+            processListener) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -231,9 +231,9 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
                     try {
                         insertingChannelList(channelList,
                                 SQLiteDatabase.CONFLICT_IGNORE);
-                        dbInsertListener.insertingSuccess();
+                        processListener.success();
                     } catch (Exception e) {
-                        dbInsertListener.error(e);
+                        processListener.error(e);
                     } finally {
                         getWritableDatabase().close();
                     }
@@ -256,8 +256,8 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
     }
 
     @Override
-    public void insertRssItemList(final List<RssItem> rssItemList, final ManagerInsertListener
-            dbInsertListener) {
+    public void insertRssItemList(final List<RssItem> rssItemList, final ProcessListener
+            processListener) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -265,9 +265,9 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
                     try {
                         insertingRssItemList(rssItemList,
                                 SQLiteDatabase.CONFLICT_IGNORE);
-                        dbInsertListener.insertingSuccess();
+                        processListener.success();
                     } catch (Exception e) {
-                        dbInsertListener.error(e);
+                        processListener.error(e);
                     } finally {
                         getWritableDatabase().close();
                     }
@@ -293,8 +293,7 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
         }
     }
 
-    public void removeChannel(final String channelUrl, final ManagerRemoveListener
-            managerRemoveListener) {
+    public void removeChannel(final String channelUrl, final ProcessListener processListener) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -302,9 +301,9 @@ public class DbManager extends SQLiteOpenHelper implements DbManagerI {
                     try {
                         getWritableDatabase().delete(Channel.TABLE_NAME, Channel
                                 .URL + " = ?", new String[]{channelUrl});
-                        managerRemoveListener.removingSuccess();
+                        processListener.success();
                     } catch (Exception e) {
-                        managerRemoveListener.error(e);
+                        processListener.error(e);
                     } finally {
                         getWritableDatabase().close();
                     }

@@ -7,13 +7,13 @@ import android.os.Environment;
 import android.webkit.URLUtil;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
 
-import ua.com.snag.rssreader.controller.LoadImageListener;
-import ua.com.snag.rssreader.controller.RssItemListReceiver;
+import ua.com.snag.rssreader.controller.DataReceiver;
+import ua.com.snag.rssreader.model.RssItem;
 
 /**
  * Created by holod on 21.12.16.
@@ -30,8 +30,8 @@ public class FileManager implements FileManagerI {
     }
 
     @Override
-    public void saveImage(final String path, final Bitmap bitmap, final SaveImageListener
-            saveImageListener) {
+    public void saveImage(final String path, final Bitmap bitmap, final DataReceiver<String>
+            dataReceiver) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -44,16 +44,16 @@ public class FileManager implements FileManagerI {
                         out = new FileOutputStream(file);
 
                         bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
-                        saveImageListener.saveSuccess(file.getPath());
+                        dataReceiver.success(file.getPath());
                     } catch (Exception e) {
-                        saveImageListener.error(e);
+                        dataReceiver.error(e);
                     } finally {
                         try {
                             if (out != null) {
                                 out.close();
                             }
                         } catch (IOException e) {
-                            saveImageListener.error(e);
+                            dataReceiver.error(e);
                         }
                     }
                 }
@@ -63,13 +63,13 @@ public class FileManager implements FileManagerI {
     }
 
     @Override
-    public void fetchRssItemList(String channelUrl, RssItemListReceiver rssItemListReceiver,
+    public void fetchRssItemList(String channelUrl, DataReceiver<List<RssItem>> dataReceiver,
                                  boolean orderDesc) {
 
     }
 
     @Override
-    public void loadImage(final String path, final LoadImageListener loadImageListener, int
+    public void loadImage(final String path, final DataReceiver<Bitmap> dataReceiver, int
             maxWidth) {
         executor.execute(new Runnable() {
             @Override
@@ -80,15 +80,15 @@ public class FileManager implements FileManagerI {
                         File file = new File(context.getExternalFilesDir(Environment
                                 .DIRECTORY_PICTURES), fileName);
                         if (!file.exists()) {
-                            loadImageListener.loadSuccess(null);
+                            dataReceiver.success(null);
                             return;
                         }
                         BitmapFactory.Options options = new BitmapFactory.Options();
                         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
                         Bitmap bitmap = BitmapFactory.decodeFile(file.getPath(), options);
-                        loadImageListener.loadSuccess(bitmap);
+                        dataReceiver.success(bitmap);
                     } catch (Exception e) {
-                        loadImageListener.error(e);
+                        dataReceiver.error(e);
                     }
                 }
             }

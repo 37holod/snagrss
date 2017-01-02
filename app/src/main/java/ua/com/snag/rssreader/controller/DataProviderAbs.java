@@ -5,11 +5,7 @@ import android.graphics.Bitmap;
 import java.util.List;
 
 import ua.com.snag.rssreader.controller.database.DbManagerI;
-import ua.com.snag.rssreader.controller.database.ManagerInsertListener;
-import ua.com.snag.rssreader.controller.database.ManagerRemoveListener;
-import ua.com.snag.rssreader.controller.database.RssItemReceiver;
 import ua.com.snag.rssreader.controller.file.FileManagerI;
-import ua.com.snag.rssreader.controller.file.SaveImageListener;
 import ua.com.snag.rssreader.controller.network.NetworkManagerI;
 import ua.com.snag.rssreader.model.Channel;
 import ua.com.snag.rssreader.model.RssItem;
@@ -21,57 +17,57 @@ import ua.com.snag.rssreader.model.RssItem;
 public abstract class DataProviderAbs implements DbManagerI, FileManagerI,
         NetworkManagerI {
     @Override
-    public void fetchChannelList(ChannelListReceiver channelListFetching) {
+    public void fetchChannelList(DataReceiver<List<Channel>> dataReceiver) {
 
     }
 
     @Override
-    public void insertChannelList(List<Channel> channelList, ManagerInsertListener
-            dbInsertListener) {
+    public void insertChannelList(List<Channel> channelList, ProcessListener processListener) {
 
     }
 
     @Override
-    public void insertRssItemList(List<RssItem> channelList, ManagerInsertListener
-            dbInsertListener) {
+    public void insertRssItemList(List<RssItem> channelList, ProcessListener processListener) {
 
     }
 
     @Override
-    public void removeChannel(String channelUrl, ManagerRemoveListener managerRemoveListener) {
-
-    }
-
-
-    @Override
-    public void loadImage(String path, LoadImageListener loadImageListener, int maxWidth) {
-
-    }
-
-    @Override
-    public void fetchChannel(String channelUrl, ChannelListReceiver channelListFetching) {
+    public void removeChannel(String channelUrl, ProcessListener processListener) {
 
     }
 
 
     @Override
-    public void fetchRssItemList(String channelUrl, RssItemListReceiver rssItemListReceiver,
+    public void loadImage(String path, DataReceiver<Bitmap> dataReceiver, int maxWidth) {
+
+    }
+
+    @Override
+    public void fetchChannel(String channelUrl, DataReceiver<List<Channel>> dataReceiver) {
+
+    }
+
+
+    @Override
+    public void fetchRssItemList(String channelUrl, DataReceiver<List<RssItem>>
+            dataReceiver,
                                  boolean orderDesc) {
 
     }
 
     @Override
-    public void saveImage(String path, Bitmap bitmap, SaveImageListener saveImageListener) {
+    public void saveImage(String path, Bitmap bitmap, DataReceiver<String> dataReceiverr) {
 
     }
 
-    public void refreshRssItemList(String channelUrl, RssItemListReceiver rssItemListReceiver,
+    public void refreshRssItemList(String channelUrl, DataReceiver<List<RssItem>>
+            dataReceiver,
                                    boolean orderDesc) {
 
     }
 
     @Override
-    public void fetchRssItem(String channelUrl, RssItemReceiver rssItemReceiver, String link) {
+    public void fetchRssItem(String channelUrl, DataReceiver<RssItem> dataReceiver, String link) {
 
     }
 }

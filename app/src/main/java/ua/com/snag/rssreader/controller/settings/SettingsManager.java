@@ -2,11 +2,12 @@ package ua.com.snag.rssreader.controller.settings;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Handler;
 
 import java.util.concurrent.ThreadPoolExecutor;
 
-import ua.com.snag.rssreader.controller.AsyncExecutionListener;
+import ua.com.snag.rssreader.controller.DataReceiver;
+import ua.com.snag.rssreader.controller.ProcessListener;
+
 
 /**
  * Created by holod on 23.12.16.
@@ -28,7 +29,7 @@ public class SettingsManager implements SettingsManagerI {
     }
 
     @Override
-    public void isFeedOrderDesc(final FetchBooleanValue fetchBooleanValue) {
+    public void isFeedOrderDesc(final DataReceiver<Boolean> dataReceiver) {
         executor.execute(new Runnable() {
             @Override
             public void run() {
@@ -36,9 +37,9 @@ public class SettingsManager implements SettingsManagerI {
 
                     try {
                         boolean value = sPref.getBoolean(ORDER_DESC, false);
-                        fetchBooleanValue.success(value);
+                        dataReceiver.success(value);
                     } catch (Exception e) {
-                        fetchBooleanValue.error(e);
+                        dataReceiver.error(e);
                     }
 
                 }
@@ -47,7 +48,7 @@ public class SettingsManager implements SettingsManagerI {
     }
 
     @Override
-    public void setFeedOrderDesc(final AsyncExecutionListener asyncExecutionListener, final boolean
+    public void setFeedOrderDesc(final ProcessListener processListener, final boolean
             value) {
         executor.execute(new Runnable() {
             @Override
@@ -58,9 +59,9 @@ public class SettingsManager implements SettingsManagerI {
                         ed = sPref.edit();
                         ed.putBoolean(ORDER_DESC, value);
                         ed.apply();
-                        asyncExecutionListener.success();
+                        processListener.success();
                     } catch (Exception e) {
-                        asyncExecutionListener.error(e);
+                        processListener.error(e);
                     }
 
 
