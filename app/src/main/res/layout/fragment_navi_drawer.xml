@@ -5,8 +5,9 @@
                 android:background="@color/primary"
                 android:orientation="vertical">
 
-    <ListView
-        android:id="@+id/fragment_navi_drawer_lv"
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/fragment_navi_drawer_rv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_margin="@dimen/fragment_padding"/>

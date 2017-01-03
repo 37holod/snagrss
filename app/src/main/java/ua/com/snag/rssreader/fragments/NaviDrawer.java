@@ -2,16 +2,25 @@ package ua.com.snag.rssreader.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.text.Html;
+import android.text.Spanned;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import ua.com.snag.rssreader.R;
 import ua.com.snag.rssreader.activities.BaseActivity;
@@ -20,6 +29,7 @@ import ua.com.snag.rssreader.controller.DataReceiver;
 import ua.com.snag.rssreader.controller.ProcessListener;
 import ua.com.snag.rssreader.controller.database.DbManagerI;
 import ua.com.snag.rssreader.model.Channel;
+import ua.com.snag.rssreader.model.RssItem;
 
 /**
  * Created by holod on 21.12.16.
@@ -27,9 +37,9 @@ import ua.com.snag.rssreader.model.Channel;
 
 public class NaviDrawer extends BaseFragment implements FeedCountListener {
     private static final String TAG = NaviDrawer.class.getSimpleName();
-    private ListView fragment_navi_drawer_lv;
+    private RecyclerView fragment_navi_drawer_rv;
     private ArrayList<ListViewItem> listViewItems;
-    private TaskListAdapter taskListAdapter;
+    private RecyclerAdapter taskListAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -42,10 +52,12 @@ public class NaviDrawer extends BaseFragment implements FeedCountListener {
     }
 
     private void initFields(View view) {
-        fragment_navi_drawer_lv = (ListView) view.findViewById(R.id.fragment_navi_drawer_lv);
+        fragment_navi_drawer_rv = (RecyclerView) view.findViewById(R.id.fragment_navi_drawer_rv);
         listViewItems = new ArrayList<>();
-        taskListAdapter = new TaskListAdapter();
-        fragment_navi_drawer_lv.setAdapter(taskListAdapter);
+        taskListAdapter = new RecyclerAdapter();
+        fragment_navi_drawer_rv.setLayoutManager(new LinearLayoutManager(getActivity()));
+        fragment_navi_drawer_rv.setItemAnimator(new DefaultItemAnimator());
+        fragment_navi_drawer_rv.setAdapter(taskListAdapter);
         refreshData();
 
     }
@@ -213,62 +225,59 @@ public class NaviDrawer extends BaseFragment implements FeedCountListener {
         }
     }
 
-    private class TaskListAdapter extends ArrayAdapter<ListViewItem> {
 
-        TaskListAdapter() {
-            super(NaviDrawer.this.getActivity(), R.layout.navi_adapter_lv_item,
-                    listViewItems);
-        }
+    private class RecyclerAdapter extends RecyclerView.Adapter<NaviDrawer.RecyclerAdapter
+            .CustomViewHolder> {
 
-        class ViewHolder {
+        class CustomViewHolder extends RecyclerView.ViewHolder {
             TextView navi_adapter_lv_item_name_tv, navi_adapter_lv_item_icon_tv;
             RelativeLayout navi_adapter_lv_item_name_rl, navi_adapter_lv_item_icon_rl;
+
+            CustomViewHolder(View view) {
+                super(view);
+                navi_adapter_lv_item_name_tv = (TextView) view.findViewById(R.id
+                        .navi_adapter_lv_item_name_tv);
+                navi_adapter_lv_item_icon_tv = (TextView) view.findViewById(R.id
+                        .navi_adapter_lv_item_icon_tv);
+                navi_adapter_lv_item_name_rl = (RelativeLayout) view
+                        .findViewById(R.id
+                                .navi_adapter_lv_item_name_rl);
+                navi_adapter_lv_item_icon_rl = (RelativeLayout) view
+                        .findViewById(R.id
+                                .navi_adapter_lv_item_icon_rl);
+            }
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            ViewHolder viewHolder;
-            if (convertView == null) {
-                LayoutInflater inflater = (LayoutInflater) NaviDrawer.this.getActivity()
-                        .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                convertView = inflater.inflate(R.layout.navi_adapter_lv_item, parent, false);
-                viewHolder = new ViewHolder();
-                viewHolder.navi_adapter_lv_item_name_tv = (TextView) convertView.findViewById(R.id
-                        .navi_adapter_lv_item_name_tv);
-                viewHolder.navi_adapter_lv_item_icon_tv = (TextView) convertView.findViewById(R.id
-                        .navi_adapter_lv_item_icon_tv);
-                viewHolder.navi_adapter_lv_item_name_rl = (RelativeLayout) convertView
-                        .findViewById(R.id
-                                .navi_adapter_lv_item_name_rl);
-                viewHolder.navi_adapter_lv_item_icon_rl = (RelativeLayout) convertView
-                        .findViewById(R.id
-                                .navi_adapter_lv_item_icon_rl);
-                convertView.setTag(viewHolder);
-            } else {
-                viewHolder = (ViewHolder) convertView.getTag();
-            }
-            final ListViewItem listViewItem = listViewItems.get(position);
+        public CustomViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View itemView = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.navi_adapter_lv_item, parent, false);
 
-            viewHolder.navi_adapter_lv_item_name_tv.setText(listViewItem.getName());
-            viewHolder.navi_adapter_lv_item_icon_tv.setText(listViewItem.getIconText());
-            viewHolder.navi_adapter_lv_item_name_rl.setOnClickListener(new View.OnClickListener() {
+            return new CustomViewHolder(itemView);
+        }
+
+
+        @Override
+        public void onBindViewHolder(final CustomViewHolder holder, int position) {
+            final ListViewItem listViewItem = listViewItems.get(position);
+            holder.navi_adapter_lv_item_name_tv.setText(listViewItem.getName());
+            holder.navi_adapter_lv_item_icon_tv.setText(listViewItem.getIconText());
+            holder.navi_adapter_lv_item_name_rl.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     listViewItem.onClick();
                 }
             });
-            viewHolder.navi_adapter_lv_item_icon_rl.setOnClickListener(new View.OnClickListener() {
+            holder.navi_adapter_lv_item_icon_rl.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     listViewItem.onIconClick();
                 }
             });
-            return convertView;
-
         }
 
         @Override
-        public int getCount() {
+        public int getItemCount() {
             return listViewItems.size();
         }
     }
