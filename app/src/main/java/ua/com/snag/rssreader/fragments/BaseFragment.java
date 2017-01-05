@@ -13,6 +13,7 @@ import java.util.List;
 import ua.com.snag.rssreader.activities.BaseActivity;
 import ua.com.snag.rssreader.controller.Core;
 import ua.com.snag.rssreader.controller.DataProvider;
+import ua.com.snag.rssreader.controller.DataProviderAbs;
 import ua.com.snag.rssreader.controller.settings.SettingsManager;
 import ua.com.snag.rssreader.controller.settings.SettingsManagerI;
 import ua.com.snag.rssreader.test.IdlingResourceImpl;
@@ -26,7 +27,7 @@ public abstract class BaseFragment extends Fragment {
     private Core core;
     private boolean alive;
     protected Handler handler;
-    protected DataProvider dataProvider;
+    protected DataProviderAbs dataProvider;
     protected SettingsManagerI settingsManager;
     protected IdlingResourceImpl idlingResource;
 

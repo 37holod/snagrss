@@ -1,6 +1,7 @@
 package ua.com.snag.rssreader.fragments;
 
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -8,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -26,7 +28,7 @@ import ua.com.snag.rssreader.model.Channel;
  * Created by holod on 22.12.16.
  */
 
-public class TabRssFragment extends ContentFragments implements FeedCountListener,
+public class TabRssFragment extends BaseFragment implements FeedCountListener,
         ChangeSettingsListener {
     private static final String TAG = TabRssFragment.class.getSimpleName();
     private static final String SAVE_PAGE_NUMBER = "SAVE_PAGE_NUMBER";
@@ -43,6 +45,8 @@ public class TabRssFragment extends ContentFragments implements FeedCountListene
         View view = inflater.inflate(R.layout.fragment_tab_rss,
                 null, false);
         initFields(view);
+        SoftReference<Fragment> rect = new SoftReference<Fragment>(new Fragment());
+        rect.get();
         return view;
     }
 

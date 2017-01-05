@@ -3,6 +3,7 @@ package ua.com.snag.rssreader.controller;
 import android.app.Application;
 import android.util.Log;
 
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -25,8 +26,8 @@ import ua.com.snag.rssreader.test.IdlingResourceImpl;
 
 public class Core extends Application {
     private static final String TAG = Core.class.getSimpleName();
-    private HashMap<String, BaseActivity> baseActivityHashMap;
-    private HashMap<String, BaseFragment> baseFragmentHashMap;
+    private HashMap<String, SoftReference> baseActivityHashMap;
+    private HashMap<String, SoftReference> baseFragmentHashMap;
     private BaseActivity currentActivity;
     private DataProvider dataProvider;
     private SettingsManager settingsManager;
@@ -73,13 +74,15 @@ public class Core extends Application {
 
     public void addToBaseActivityMap(BaseActivity baseActivity) {
         currentActivity = baseActivity;
-        baseActivityHashMap.put(baseActivity.getClass().toString(), baseActivity);
+        baseActivityHashMap.put(baseActivity.getClass().toString(), new
+                SoftReference<BaseActivity>(baseActivity));
         baseActivity.setSettingsManager(settingsManager);
         baseActivity.setIdlingResource(idlingResource);
     }
 
     public void addToBaseFragmentsMap(BaseFragment baseFragment) {
-        baseFragmentHashMap.put(baseFragment.getClass().toString(), baseFragment);
+        baseFragmentHashMap.put(baseFragment.getClass().toString(), new
+                SoftReference<BaseFragment>(baseFragment));
         baseFragment.setDataProvider(dataProvider);
         baseFragment.setSettingsManager(settingsManager);
         baseFragment.setIdlingResource(idlingResource);
@@ -96,8 +99,13 @@ public class Core extends Application {
     private void iter(ArrayList<Object> arrayList, Iterator<?> it, Class clazz) {
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry) it.next();
-            if (clazz.isInstance(pair.getValue())) {
-                arrayList.add(pair.getValue());
+
+            Object obj = ((SoftReference) pair.getValue()).get();
+            if (obj == null) {
+                continue;
+            }
+            if (clazz.isInstance(((SoftReference) pair.getValue()).get())) {
+                arrayList.add(((SoftReference) pair.getValue()).get());
             }
         }
     }

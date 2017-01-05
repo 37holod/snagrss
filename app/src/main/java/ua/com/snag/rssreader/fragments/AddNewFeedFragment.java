@@ -19,7 +19,7 @@ import ua.com.snag.rssreader.model.Channel;
  * Created by holod on 22.12.16.
  */
 
-public class AddNewFeedFragment extends ContentFragments {
+public class AddNewFeedFragment extends BaseFragment {
     private static final String TAG = AddNewFeedFragment.class.getSimpleName();
     private EditText fragment_add_new_feed_url_et;
     private Button fragment_add_new_feed_bt;
