@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "24.0.1"
+    buildToolsVersion '27.0.3'
     defaultConfig {
         applicationId "ua.com.snag.rssreader"
         minSdkVersion 17
@@ -15,14 +15,16 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            def appName
+            //Check if an applicationName property is supplied; if not use the name of the parent project.
+            if (project.hasProperty("applicationName")) {
+                appName = applicationName
+            } else {
+                appName = parent.name
+            }
             applicationVariants.all { variant ->
-                variant.outputs.each { output ->
-                    project.ext { appName = 'snagrss' }
-                    def formattedDate = new Date().format('yyyyMMddHHmmss')
-                    def newName = output.outputFile.name
-                    newName = newName.replace("app-", "$project.ext.appName-")
-                    newName = newName.replace("-debug", "-debug.V_" + versionName)
-                    output.outputFile = new File(output.outputFile.parent, newName)
+                variant.outputs.all {
+                    outputFileName = "${appName}-${variant.buildType.name}.V_${defaultConfig.versionName}.apk"
                 }
             }
         }
@@ -30,13 +32,13 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:24.2.1'
-    compile 'com.android.support:design:24.2.1'
-    testCompile 'junit:junit:4.12'
-    compile 'com.android.support:recyclerview-v7:24.2.1'
-    compile 'com.android.support.test.espresso:espresso-idling-resource:2.2.2'
+    implementation 'com.android.support:appcompat-v7:24.2.1'
+    implementation 'com.android.support:design:24.2.1'
+    testImplementation 'junit:junit:4.12'
+    implementation 'com.android.support:recyclerview-v7:24.2.1'
+    implementation 'com.android.support.test.espresso:espresso-idling-resource:2.2.2'
 }
